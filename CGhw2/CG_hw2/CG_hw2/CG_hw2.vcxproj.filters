@@ -18,7 +18,7 @@
     <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="hello_window_clear.cpp">
+    <ClCompile Include="shadersTriangle.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
