@@ -1,5 +1,8 @@
 opengl32.lib
 glfw3.lib
 
+C:\packages\OpenGL\Libraries\Includes
 D:\software\OpenGL\Libraries\Includes
+
+C:\packages\OpenGL\Libraries\Libs
 D:\software\OpenGL\Libraries\Libs
