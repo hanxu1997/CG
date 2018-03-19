@@ -2,7 +2,11 @@
 #include <GLFW/glfw3.h>
 /*GLAD的头文件包含了正确的OpenGL头文件（例如GL/gl.h），
 所以需要在其它依赖于OpenGL的头文件之前包含GLAD。*/
+#include "imgui.h"
+#include "imgui_impl_glfw_gl3.h"
+#include <stdio.h>
 #include <iostream>
+#include"Triangle.h"
 using namespace std;
 // -----------------------------------------------------
 // 常量值
@@ -49,7 +53,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 // -----------------------------------------------------
 
-int main()
+int Hello_Triangle()
 {
 	// 初始化GLFW
 	glfwInit();
@@ -85,7 +89,7 @@ int main()
 	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-	// 检查是否编译成功
+	// 检查顶点着色器是否编译成功
 	int success;
 	char infoLog[512];
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -98,7 +102,7 @@ int main()
 	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
-	// check for shader compile errors
+	// 检查片段着色器是否编译成功
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
@@ -130,7 +134,8 @@ int main()
 
 	};
 	// 顶点缓冲对象，顶点数组对象
-	unsigned int VBO, VAO;
+	unsigned int VBO;
+	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	// 绑定顶点数组对象
@@ -147,7 +152,7 @@ int main()
 	glEnableVertexAttribArray(1);
 	// 激活着色器程序对象
 	glUseProgram(shaderProgram);
-
+	//-----------------------
 	// 渲染循环 render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -157,11 +162,9 @@ int main()
 		// 设置清空屏幕所用颜色
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
 		// 渲染三角形
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
 		// 交换缓冲
 		glfwSwapBuffers(window);
 		// 检查有没有触发什么事件、更新窗口状态，并调用对应的回调函数
