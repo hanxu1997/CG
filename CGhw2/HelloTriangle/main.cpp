@@ -1,4 +1,3 @@
-#include"initial.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 /*GLAD的头文件包含了正确的OpenGL头文件（例如GL/gl.h），
@@ -11,23 +10,26 @@ using namespace std;
 
 // 顶点着色器源码
 const char *vertexShaderSource = "#version 440 core\n"
-								"layout (location = 0) in vec3 aPos;\n"
-								"layout (location = 1) in vec3 aColor;\n"
-								"out vec3 ourColor;\n"
+								"layout (location = 0) in vec3 Position;\n"
+								"layout (location = 1) in vec3 Color;\n"
+								"out vec3 vetexColor;\n"
 								"void main()\n"
 								"{\n"
-								"   gl_Position = vec4(aPos, 1.0);\n"
-								"   ourColor = aColor;\n"
+								"   gl_Position = vec4(Position, 1.0);\n"
+								"   vetexColor = Color;\n"
 								"}\0";
 // 片段着色器源码
 const char *fragmentShaderSource = "#version 440 core\n"
 								"out vec4 FragColor;\n"
-								"in vec3 ourColor;\n"
+								"in vec3 vetexColor;\n"
 								"void main()\n"
 								"{\n"
-								"   FragColor = vec4(ourColor, 1.0f);\n"
+								"   FragColor = vec4(vetexColor, 1.0f);\n"
 								"}\n\0";
-
+// 输入控制
+void processInput(GLFWwindow *);
+// 对窗口注册一个回调函数，它会在每次窗口大小被调整的时候被调用
+void framebuffer_size_callback(GLFWwindow*, int, int);
 int main()
 {
 	// 初始化GLFW
@@ -65,7 +67,7 @@ int main()
 	ImGui_ImplGlfwGL3_Init(window, true);
 
 	// Setup style
-	ImGui::StyleColorsDark();
+	// ImGui::StyleColorsDark();
 	ImVec4 clear_color = ImVec4(0.92f, 0.92f, 0.92f, 1.0f);
 
 	// 创建并编译着色器程序
@@ -93,7 +95,7 @@ int main()
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
 	}
-	// 3. 链接着色器
+	// 链接着色器
 	int shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
@@ -107,6 +109,8 @@ int main()
 	// 链接完成后删除着色器对象
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
+	// 激活着色器程序对象
+	glUseProgram(shaderProgram);
 
 	// 三角形顶点设置
 	float vertices[] = {
@@ -118,14 +122,14 @@ int main()
 
 	float points[] = {
 		// positions         // colors
-		-0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f 
+		-0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // left
+		0.0f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // mid
+		0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f   // right
 	};
 	float lines[] = {
 		// positions         // colors
-		-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 
-		0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f 
+		-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // start
+		0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // end
 	};
 
 	float severalTriangles[] = {
@@ -148,11 +152,9 @@ int main()
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	// 绑定顶点数组对象
+	// 绑定
 	glBindVertexArray(VAO);
-	// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	// 链接顶点属性
 	// 位置属性
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -160,8 +162,7 @@ int main()
 	// 颜色属性
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	// 激活着色器程序对象
-	glUseProgram(shaderProgram);
+
 
 	unsigned int EBO;
 	glGenBuffers(1, &EBO);
@@ -175,7 +176,7 @@ int main()
 	float right_color[] = { 0.0, 0.0, 1.0 };
 	
 	ImGuiWindowFlags window_flags = 0;
-	bool show_triangle_window = false;
+	bool show_triangle_window = true;
 	bool show_point_window = false;
 	bool show_line_window = false;
 	bool show_severaltriangles_window = false;
@@ -246,18 +247,8 @@ int main()
 			ImGui::ColorEdit3("leftPoint", (float*)&left_color);
 			ImGui::ColorEdit3("TopPoint", (float*)&top_color);
 			ImGui::ColorEdit3("RightPoint", (float*)&right_color);
-			// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+			// 把三角形顶点数组复制到一个顶点缓冲中，供OpenGL使用
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-			// 位置属性
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
-			// 颜色属性
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-			glEnableVertexAttribArray(1);
-			// 激活着色器程序对象
-			glUseProgram(shaderProgram);
-			// 渲染三角形
-			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 			vertices[3] = left_color[0];
 			vertices[4] = left_color[1];
@@ -273,40 +264,23 @@ int main()
 		// rendering point
 		if (show_point_window)
 		{
-			// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
 			glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
 			glPointSize(10.0f);
-			glBindVertexArray(VAO);
 			glDrawArrays(GL_POINTS, 0, 3);
 
 		}
 		// rendering lines
 		if (show_line_window)
 		{
-			// 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
 			glBufferData(GL_ARRAY_BUFFER, sizeof(lines), lines, GL_STATIC_DRAW);
-			// 位置属性
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
 			glLineWidth(10.0f);
-			glBindVertexArray(VAO);
 			glDrawArrays(GL_LINES, 0, 2);
 		}
 
 		// 使用EBO(Element Buffer Object)绘制多个三角形
 		if (show_severaltriangles_window)
 		{
-			glBindVertexArray(VAO);
-			glBindBuffer(GL_ARRAY_BUFFER, VBO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(severalTriangles), severalTriangles, GL_STATIC_DRAW);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-			glEnableVertexAttribArray(1);
-			glUseProgram(shaderProgram);
-			glBindVertexArray(VAO);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 			glBindVertexArray(EBO);
 		}
@@ -329,3 +303,21 @@ int main()
 	return 0;
 }
 
+// 输入控制
+void processInput(GLFWwindow *window)
+{
+	// glfwGetKey
+	// 输入：一个窗口以及一个按键(这里检查用户是否按下了返回键Esc)
+	// 返回：这个按键是否正在被按下
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+}
+
+// 对窗口注册一个回调函数，它会在每次窗口大小被调整的时候被调用
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// 设置窗口的维度
+	glViewport(0, 0, width, height);
+}
