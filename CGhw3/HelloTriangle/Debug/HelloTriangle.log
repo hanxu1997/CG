@@ -1,0 +1,3 @@
+﻿  main.cpp
+d:\github\cg\cghw3\hellotriangle\main.cpp(30): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+  HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe
