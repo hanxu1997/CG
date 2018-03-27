@@ -1,3 +1,10 @@
-﻿  main.cpp
-c:\github\cg\cghw3\hellotriangle\main.cpp(370): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-  HelloTriangle.vcxproj -> C:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe
+﻿  glad.c
+  main.cpp
+d:\github\cg\cghw3\hellotriangle\main.cpp(370): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+  imgui_impl_glfw_gl3.cpp
+  imgui_draw.cpp
+  imgui_demo.cpp
+  imgui.cpp
+  正在生成代码...
+  LINK : 没有找到 D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe 或上一个增量链接没有生成它；正在执行完全链接
+  HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe
