@@ -17,14 +17,23 @@ void swap(int *a, int *b) {
 	*a = *b;
 	*b = temp;
 }
+vector<float> normalize(vector<int>p, int width, int height) {
+	vector<float> q;
+	int length = p.size();
+	for (int i = 0; i < length; i = i + 2) {
+		q.push_back(float(p[i]) / float(width));
+		q.push_back(float(p[i + 1]) / float(height));
+	}
+	return q;
+}
 
 vector<int> Breseham(int x0, int y0, int x1, int y1) {
 	int dx = x1 - x0;
 	int dy = y1 - y0;
 	int length = 0;
 	int p0 = 0;
-	int Xcoordinate[1200] = { 0 };
-	int Ycoordinate[800] = { 0 };
+	int Xcoordinate[1201] = { 0 };
+	int Ycoordinate[801] = { 0 };
 	// Ð±ÂÊ²»´æÔÚ
 	if (x0 == x1) {
 		length = fabs(y1 - y0) + 1;
@@ -105,7 +114,7 @@ vector<int> Breseham(int x0, int y0, int x1, int y1) {
 
 
 int main() {
-	vector<int> p = Breseham(-5, -5, 5, 5);
+	vector<float> p = normalize(Breseham(-400, -400, -400, -380),1200,800);
 	int length = p.size();
 	cout << length << endl;
 	for (int i = 0; i < length; i = i+2) {
