@@ -1,50 +1,8 @@
-<<<<<<< HEAD
-﻿  glad.c
+﻿cl : 命令行 warning D9028: 最小重新生成失败，正在转换为标准生成
   main.cpp
-d:\github\cg\cghw3\hellotriangle\main.cpp(370): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-  imgui_impl_glfw_gl3.cpp
-  imgui_draw.cpp
-  imgui_demo.cpp
-  imgui.cpp
-  正在生成代码...
-  LINK : 没有找到 D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe 或上一个增量链接没有生成它；正在执行完全链接
+d:\github\cg\cghw3\hellotriangle\main.cpp(124): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\main.cpp(125): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\main.cpp(150): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\main.cpp(151): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\main.cpp(509): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
   HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe
-=======
-﻿  main.cpp
-c:\github\cg\cghw3\hellotriangle\main.cpp(419): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-c:\software\vs2017\vc\tools\msvc\14.11.25503\include\xmemory0(856): error C2558: struct“Point”: 没有可用的复制构造函数或复制构造函数声明为“explicit”
-  c:\software\vs2017\vc\tools\msvc\14.11.25503\include\vector(958): note: 参见对正在编译的函数 模板 实例化“void std::_Default_allocator_traits<_Alloc>::construct<_Ty,const _Ty&>(_Alloc &,_Objty *const ,const _Ty &)”的引用
-          with
-          [
-              _Alloc=std::allocator<Point>,
-              _Ty=Point,
-              _Objty=Point
-          ]
-  c:\software\vs2017\vc\tools\msvc\14.11.25503\include\vector(958): note: 参见对正在编译的函数 模板 实例化“void std::_Default_allocator_traits<_Alloc>::construct<_Ty,const _Ty&>(_Alloc &,_Objty *const ,const _Ty &)”的引用
-          with
-          [
-              _Alloc=std::allocator<Point>,
-              _Ty=Point,
-              _Objty=Point
-          ]
-  c:\software\vs2017\vc\tools\msvc\14.11.25503\include\vector(981): note: 参见对正在编译的函数 模板 实例化“void std::vector<Point,std::allocator<_Ty>>::emplace_back<const _Ty&>(const _Ty &)”的引用
-          with
-          [
-              _Ty=Point
-          ]
-  c:\software\vs2017\vc\tools\msvc\14.11.25503\include\vector(980): note: 编译 类 模板 成员函数 "void std::vector<Point,std::allocator<_Ty>>::push_back(const _Ty &)" 时
-          with
-          [
-              _Ty=Point
-          ]
-  c:\github\cg\cghw3\hellotriangle\main.cpp(322): note: 参见对正在编译的函数 模板 实例化“void std::vector<Point,std::allocator<_Ty>>::push_back(const _Ty &)”的引用
-          with
-          [
-              _Ty=Point
-          ]
-  c:\github\cg\cghw3\hellotriangle\main.cpp(321): note: 参见对正在编译的 类 模板 实例化 "std::vector<Point,std::allocator<_Ty>>" 的引用
-          with
-          [
-              _Ty=Point
-          ]
->>>>>>> 113922454d298b8f8a72b67220c0e411cdac437c

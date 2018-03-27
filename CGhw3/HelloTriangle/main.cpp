@@ -20,24 +20,9 @@ struct Point {
 		x = x0;
 		y = y0;
 	}
-	Point(Point & b) {
-		*this = b;
-	}
-	void set(Point* s1, Point* s2) {
-		s1->x = s2->x;
-		s1->y = s2->y;
-	}
-	Point& operator=(const Point& s)//重载运算符  
-	{
-		set(this, (Point*)&s);
-	}
 };
-
-bool nonmem_cmp(const Point&t1, const Point&t2)
-{
-	if (t1.y > t2.y)
-		return true;
-	return false;
+bool cpmpare(Point a, Point b) {
+	return a.y < b.y;
 }
 
 
@@ -124,7 +109,109 @@ vector<int> BresenhamCircle(int xc, int yc, int r) {
 	return Circle;
 }
 
+// p1p2下， p3在上
+vector<int> drawPositive(Point p1, Point p2, Point p3) {
+	float k1, k2;
+	if (p1.x < p2.x) {
+		k1 = -(float)(p1.x - p3.x) / (float)(p1.y - p3.y);
+		k2 = -(float)(p2.x - p3.x) / (float)(p2.y - p3.y);
+	}
+	else {
+		k1 = -(float)(p2.x - p3.x) / (float)(p2.y - p3.y);
+		k2 = -(float)(p1.x - p3.x) / (float)(p1.y - p3.y);
+	}
+	
+	float xL = p3.x;
+	float xR = p3.x;
+	vector<int> coordinate;
+	for (int y = p3.y; y >= p1.y; y--) {
+		for (int x = (int)xL; x <= (int)xR; x++) {
+			coordinate.push_back(x);
+			coordinate.push_back(y);
+		}
+		xL += k1;
+		xR += k2;
+	}
+	return coordinate;
+}
+
+// p1下， p2p3在上
+vector<int> drawNegative(Point p1, Point p2, Point p3) {
+	float k1, k2;
+	if (p2.x < p3.x) {
+		k1 = (float)(p2.x - p1.x) / (float)(p2.y - p1.y);
+		k2 = (float)(p3.x - p1.x) / (float)(p3.y - p1.y);
+	}
+	else {
+		k1 = (float)(p3.x - p1.x) / (float)(p3.y - p1.y);
+		k2 = (float)(p2.x - p1.x) / (float)(p2.y - p1.y);	
+	}
+
+	float xL = p1.x;
+	float xR = p1.x;
+	vector<int> coordinate;
+	for (int y = p1.y; y <= p2.y; y++) {
+		for (int x = (int)xL; x <= (int)xR; x++) {
+			coordinate.push_back(x);
+			coordinate.push_back(y);
+		}
+		xL += k1;
+		xR += k2;
+	}
+	return coordinate;
+}
+// 画三角形
+vector<int> drawTriangle(Point p1, Point p2, Point p3) {
+	vector<Point> points;
+	vector<int> trianglePoints;
+	vector<int> v1;
+	vector<int> v2;
+	points.push_back(p1);
+	points.push_back(p2);
+	points.push_back(p3);
+	sort(points.begin(), points.end(), cpmpare);
+	p1 = points[0];
+	p2 = points[1];
+	p3 = points[2];
+	if (p1.y == p2.y) {
+		trianglePoints = drawPositive(p1, p2, p3);
+	}
+	else if (p2.y == p3.y) {
+		trianglePoints = drawNegative(p1, p2, p3);
+	}
+	else {
+		int x4 = (int)((float)((p3.x-p1.x)*(p2.y-p1.y)) / (float)(p3.y - p1.y)) + p1.x;
+		Point p4(x4, p2.y);
+		v1 = drawPositive(p4, p2, p3);
+		v2 = drawNegative(p1, p4, p2);
+		int length1 = v1.size();
+		int length2 = v2.size();
+		for (int i = 0; i < length1+length2; i++) {
+			if (i < length1) {
+				trianglePoints.push_back(v1[i]);
+			}
+			else {
+				trianglePoints.push_back(v2[i-length1]);
+			}
+			
+		}
+
+	}
+	return trianglePoints;
+}
+
 int main() {
+	/*
+	Point v1(-2, -1);
+	Point v2(0, 3);
+	Point v3(2, -1);
+	vector<int> c1 = drawTriangle(v1, v2, v3);
+	int clength = c1.size();
+	cout << clength << endl;
+	for (int i = 0; i < clength; i = i + 2) {
+		cout << c1[i] << " " << c1[i + 1] << endl;
+	}
+	*/
 	// 初始化GLFW
 	glfwInit();
 	// 配置GLFW
@@ -229,6 +316,7 @@ int main() {
 	float* line3 = getRealCoordinate(p3, length3);
 
 
+	
 
 	int r = 100;
 
@@ -238,6 +326,7 @@ int main() {
 	bool show_rasterization_window = false;
 
 	int flag = 0;
+	cout << "render loop" << endl;
 	// 渲染循环 render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -315,15 +404,16 @@ int main() {
 			ImGui::End();
 		}
 		if (show_rasterization_window) {
-			Point v1(-200, -100);
-			Point v2(0, 200);
+			
+			Point v1(-200, 0);
+			Point v2(0, 100);
 			Point v3(200, -100);
-			vector<Point> points;
-			points.push_back(v1);
-			points.push_back(v2);
-			points.push_back(v3);
-			sort(points.begin(), points.end(), nonmem_cmp);
-			cout << v2.x << endl;
+			vector<float> c1 = normalize(drawTriangle(v1, v2, v3), 1200, 800);
+			int clength = c1.size();
+			float* c2 = getRealCoordinate(c1, clength);
+			glBufferData(GL_ARRAY_BUFFER, 3 * clength * sizeof(float), c2, GL_STATIC_DRAW);
+			glPointSize(5.0f);
+			glDrawArrays(GL_POINTS, 0, clength / 2);
 			
 
 		}
