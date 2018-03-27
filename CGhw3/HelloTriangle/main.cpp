@@ -5,25 +5,58 @@
 #include <stdio.h>
 #include <math.h>
 #include <iostream>
+#include <algorithm>
 #include <vector>
 using namespace std;
+
+struct Point {
+	int x;
+	int y;
+	Point() {
+		x = 0;
+		y = 0;
+	}
+	Point(int x0, int y0) {
+		x = x0;
+		y = y0;
+	}
+	Point(Point & b) {
+		*this = b;
+	}
+	void set(Point* s1, Point* s2) {
+		s1->x = s2->x;
+		s1->y = s2->y;
+	}
+	Point& operator=(const Point& s)//重载运算符  
+	{
+		set(this, (Point*)&s);
+	}
+};
+
+bool nonmem_cmp(const Point&t1, const Point&t2)
+{
+	if (t1.y > t2.y)
+		return true;
+	return false;
+}
+
+
 // 顶点着色器源码
 const char *vertexShaderSource = "#version 440 core\n"
-								"layout (location = 0) in vec3 Position;\n"
-								"layout (location = 1) in vec3 Color;\n"
-								"out vec3 vetexColor;\n"
-								"void main()\n"
-								"{\n"
-								"   gl_Position = vec4(Position, 1.0);\n"
-								"   vetexColor = Color;\n"
-								"}\0";
+			"layout (location = 0) in vec3 Position;\n"
+			"out vec4 vetexColor;\n"
+			"void main()\n"
+			"{\n"
+			"   gl_Position = vec4(Position, 1.0);\n"
+			"   vetexColor = vec4(0.45, 0.45, 0.45, 1.0);\n"
+			"}\0";
 // 片段着色器源码
 const char *fragmentShaderSource = "#version 440 core\n"
 								"out vec4 FragColor;\n"
-								"in vec3 vetexColor;\n"
+								"in vec4 vetexColor;\n"
 								"void main()\n"
 								"{\n"
-								"   FragColor = vec4(vetexColor, 1.0f);\n"
+								"   FragColor = vetexColor;\n"
 								"}\n\0";
 
 void processInput(GLFWwindow *);
@@ -182,11 +215,8 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	// 链接顶点属性
 	// 位置属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// 颜色属性
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
 
 	vector<float> p1 = normalize(BresenhamLine(-200, -100, 0, 200), 1200, 800);
 	int length1 = p1.size();
@@ -203,10 +233,10 @@ int main() {
 	int r = 100;
 
 	ImGuiWindowFlags window_flags = 0;
-	bool show_triangle_window = false;
 	bool show_circle_window = false;
 	bool show_line_window = true;
-	bool show_severaltriangles_window = false;
+	bool show_rasterization_window = false;
+
 	int flag = 0;
 	// 渲染循环 render loop
 	while (!glfwWindowShouldClose(window))
@@ -228,15 +258,22 @@ int main() {
 				ImGui::MenuItem("Line Window", NULL, &show_line_window);
 				if (show_line_window == true)
 				{
-					show_triangle_window = false;
+					show_rasterization_window = false;
 					show_circle_window = false;
 				}
 				ImGui::MenuItem("Circle Window", NULL, &show_circle_window);
 				if (show_circle_window == true)
 				{
-					show_triangle_window = false;
+					show_rasterization_window = false;
 					show_line_window = false;
 				}
+				ImGui::MenuItem("Rasterization Window", NULL, &show_rasterization_window);
+				if (show_rasterization_window == true)
+				{
+					show_circle_window = false;
+					show_line_window = false;
+				}
+
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
@@ -277,7 +314,19 @@ int main() {
 			glDrawArrays(GL_POINTS, 0, circleLength/2);
 			ImGui::End();
 		}
+		if (show_rasterization_window) {
+			Point v1(-200, -100);
+			Point v2(0, 200);
+			Point v3(200, -100);
+			vector<Point> points;
+			points.push_back(v1);
+			points.push_back(v2);
+			points.push_back(v3);
+			sort(points.begin(), points.end(), nonmem_cmp);
+			cout << v2.x << endl;
+			
 
+		}
 		// Rendering
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -446,7 +495,7 @@ vector<int> BresenhamLine(int x0, int y0, int x1, int y1) {
 	return p;
 }
 
-// 把含有x,y坐标的vector转换成带颜色的float*
+// 把含有x,y坐标的vector转换成float*
 float* getRealCoordinate(vector<float> p, int length) {
 	int length1 = length * 3;
 	float* line = new float[length1];
@@ -455,10 +504,7 @@ float* getRealCoordinate(vector<float> p, int length) {
 		line[index] = p[i];
 		line[index + 1] = p[i + 1];
 		line[index + 2] = 0.0f;
-		line[index + 3] = 0.0f;
-		line[index + 4] = 0.0f;
-		line[index + 5] = 1.0f;
-		index = index + 6;
+		index = index + 3;
 	}
 	return line;
 }
