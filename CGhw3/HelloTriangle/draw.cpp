@@ -154,7 +154,7 @@ vector<int> BresenhamCircle(int xc, int yc, int r) {
 	vector<int> Circle;
 	int x = 0;
 	int y = r;
-	int d = 3 - 2 * r;
+	int d = 3 - (r<<1);
 	Circle.push_back(xc + x);
 	Circle.push_back(xc + y);
 	Circle.push_back(xc + x);
@@ -173,10 +173,10 @@ vector<int> BresenhamCircle(int xc, int yc, int r) {
 	Circle.push_back(xc - x);
 	while (x < y) {
 		if (d < 0) {
-			d = d + 4 * x + 6;
+			d = d + (x<<2) + 6;
 		}
 		else {
-			d = d + 4 * (x - y) + 10;
+			d = d + ((x - y)<<2) + 10;
 			y--;
 		}
 		x++;

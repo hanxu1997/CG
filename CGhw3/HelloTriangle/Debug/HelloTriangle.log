@@ -1,2 +1,7 @@
-﻿  main.cpp
-  HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe
+﻿  draw.cpp
+d:\github\cg\cghw3\hellotriangle\draw.cpp(71): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\draw.cpp(216): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\draw.cpp(217): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\draw.cpp(242): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+d:\github\cg\cghw3\hellotriangle\draw.cpp(243): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\CGhw3.exe
