@@ -1,8 +1,2 @@
-﻿cl : 命令行 warning D9028: 最小重新生成失败，正在转换为标准生成
-  main.cpp
-d:\github\cg\cghw3\hellotriangle\main.cpp(124): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\main.cpp(125): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\main.cpp(150): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\main.cpp(151): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\main.cpp(509): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+﻿  main.cpp
   HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\HelloTriangle.exe

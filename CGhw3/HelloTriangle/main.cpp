@@ -7,24 +7,8 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include "draw.h"
 using namespace std;
-
-struct Point {
-	int x;
-	int y;
-	Point() {
-		x = 0;
-		y = 0;
-	}
-	Point(int x0, int y0) {
-		x = x0;
-		y = y0;
-	}
-};
-bool cpmpare(Point a, Point b) {
-	return a.y < b.y;
-}
-
 
 // 顶点着色器源码
 const char *vertexShaderSource = "#version 440 core\n"
@@ -33,7 +17,7 @@ const char *vertexShaderSource = "#version 440 core\n"
 			"void main()\n"
 			"{\n"
 			"   gl_Position = vec4(Position, 1.0);\n"
-			"   vetexColor = vec4(0.45, 0.45, 0.45, 1.0);\n"
+			"   vetexColor = vec4(0.38, 0.38, 0.50, 1.0);\n"
 			"}\0";
 // 片段着色器源码
 const char *fragmentShaderSource = "#version 440 core\n"
@@ -46,172 +30,8 @@ const char *fragmentShaderSource = "#version 440 core\n"
 
 void processInput(GLFWwindow *);
 void framebuffer_size_callback(GLFWwindow*, int, int);
-// ---------直线算法-------------------------------------------------------
-// 两值交换
-void swap(int *a, int *b);
-// 迭代得到y坐标
-void getYcoordinate(int* Ycoordinate, int pi, int dx, int dy, int length);
-// 归一化到[-1,1]
-vector<float> normalize(vector<int>p, int width, int height);
-
-// 由起点终点坐标得到连线上所有点的xy坐标：x0,y0,...xi,yi,...，x1,y1
-vector<int> BresenhamLine(int x0, int y0, int x1, int y1);
-// 把含有x,y坐标的vector转换成带颜色的float*
-float* getRealCoordinate(vector<float> p, int length);
-// -----------------------------------------------------------------------
-// ---------画圆算法-------------------------------------------------------
-vector<int> BresenhamCircle(int xc, int yc, int r) {
-	vector<int> Circle;
-	int x = 0;
-	int y = r;
-	int d = 3 - 2 * r;
-	Circle.push_back(xc + x);
-	Circle.push_back(xc + y);
-	Circle.push_back(xc + x);
-	Circle.push_back(xc - y);
-	Circle.push_back(xc - x);
-	Circle.push_back(xc + y);
-	Circle.push_back(xc - x);
-	Circle.push_back(xc - y);
-	Circle.push_back(xc + y);
-	Circle.push_back(xc + x);
-	Circle.push_back(xc + y);
-	Circle.push_back(xc - x);
-	Circle.push_back(xc - y);
-	Circle.push_back(xc + x);
-	Circle.push_back(xc - y);
-	Circle.push_back(xc - x);
-	while (x < y) {
-		if (d < 0) {
-			d = d + 4 * x + 6;
-		} else {
-			d = d + 4*(x - y) + 10;
-			y--;
-		}
-		x++;
-		Circle.push_back(xc + x);
-		Circle.push_back(xc + y);
-		Circle.push_back(xc + x);
-		Circle.push_back(xc - y);
-		Circle.push_back(xc - x);
-		Circle.push_back(xc + y);
-		Circle.push_back(xc - x);
-		Circle.push_back(xc - y);
-		Circle.push_back(xc + y);
-		Circle.push_back(xc + x);
-		Circle.push_back(xc + y);
-		Circle.push_back(xc - x);
-		Circle.push_back(xc - y);
-		Circle.push_back(xc + x);
-		Circle.push_back(xc - y);
-		Circle.push_back(xc - x);
-	}
-	return Circle;
-}
-
-// p1p2下， p3在上
-vector<int> drawPositive(Point p1, Point p2, Point p3) {
-	float k1, k2;
-	if (p1.x < p2.x) {
-		k1 = -(float)(p1.x - p3.x) / (float)(p1.y - p3.y);
-		k2 = -(float)(p2.x - p3.x) / (float)(p2.y - p3.y);
-	}
-	else {
-		k1 = -(float)(p2.x - p3.x) / (float)(p2.y - p3.y);
-		k2 = -(float)(p1.x - p3.x) / (float)(p1.y - p3.y);
-	}
-	
-	float xL = p3.x;
-	float xR = p3.x;
-	vector<int> coordinate;
-	for (int y = p3.y; y >= p1.y; y--) {
-		for (int x = (int)xL; x <= (int)xR; x++) {
-			coordinate.push_back(x);
-			coordinate.push_back(y);
-		}
-		xL += k1;
-		xR += k2;
-	}
-	return coordinate;
-}
-
-// p1下， p2p3在上
-vector<int> drawNegative(Point p1, Point p2, Point p3) {
-	float k1, k2;
-	if (p2.x < p3.x) {
-		k1 = (float)(p2.x - p1.x) / (float)(p2.y - p1.y);
-		k2 = (float)(p3.x - p1.x) / (float)(p3.y - p1.y);
-	}
-	else {
-		k1 = (float)(p3.x - p1.x) / (float)(p3.y - p1.y);
-		k2 = (float)(p2.x - p1.x) / (float)(p2.y - p1.y);	
-	}
-
-	float xL = p1.x;
-	float xR = p1.x;
-	vector<int> coordinate;
-	for (int y = p1.y; y <= p2.y; y++) {
-		for (int x = (int)xL; x <= (int)xR; x++) {
-			coordinate.push_back(x);
-			coordinate.push_back(y);
-		}
-		xL += k1;
-		xR += k2;
-	}
-	return coordinate;
-}
-// 画三角形
-vector<int> drawTriangle(Point p1, Point p2, Point p3) {
-	vector<Point> points;
-	vector<int> trianglePoints;
-	vector<int> v1;
-	vector<int> v2;
-	points.push_back(p1);
-	points.push_back(p2);
-	points.push_back(p3);
-	sort(points.begin(), points.end(), cpmpare);
-	p1 = points[0];
-	p2 = points[1];
-	p3 = points[2];
-	if (p1.y == p2.y) {
-		trianglePoints = drawPositive(p1, p2, p3);
-	}
-	else if (p2.y == p3.y) {
-		trianglePoints = drawNegative(p1, p2, p3);
-	}
-	else {
-		int x4 = (int)((float)((p3.x-p1.x)*(p2.y-p1.y)) / (float)(p3.y - p1.y)) + p1.x;
-		Point p4(x4, p2.y);
-		v1 = drawPositive(p4, p2, p3);
-		v2 = drawNegative(p1, p4, p2);
-		int length1 = v1.size();
-		int length2 = v2.size();
-		for (int i = 0; i < length1+length2; i++) {
-			if (i < length1) {
-				trianglePoints.push_back(v1[i]);
-			}
-			else {
-				trianglePoints.push_back(v2[i-length1]);
-			}
-			
-		}
-
-	}
-	return trianglePoints;
-}
 
 int main() {
-	/*
-	Point v1(-2, -1);
-	Point v2(0, 3);
-	Point v3(2, -1);
-	vector<int> c1 = drawTriangle(v1, v2, v3);
-	int clength = c1.size();
-	cout << clength << endl;
-	for (int i = 0; i < clength; i = i + 2) {
-		cout << c1[i] << " " << c1[i + 1] << endl;
-	}
-	*/
 	// 初始化GLFW
 	glfwInit();
 	// 配置GLFW
@@ -305,32 +125,22 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	vector<float> p1 = normalize(BresenhamLine(-200, -100, 0, 200), 1200, 800);
-	int length1 = p1.size();
-	float* line1 = getRealCoordinate(p1, length1);
-	vector<float> p2 = normalize(BresenhamLine(200, -100, 0, 200), 1200, 800);
-	int length2 = p2.size();
-	float* line2 = getRealCoordinate(p2, length2);
-	vector<float> p3 = normalize(BresenhamLine(-200, -100, 200, -100), 1200, 800);
-	int length3 = p3.size();
-	float* line3 = getRealCoordinate(p3, length3);
-
-
-	
-
+	// 三角形三顶点
+	int point0[] = {-200, -100 };
+	int point1[] = {200, -100};
+	int point2[] = {0, 200 };
+	// 圆的半径
 	int r = 100;
 
 	ImGuiWindowFlags window_flags = 0;
+	bool show_triangle_window = true;
 	bool show_circle_window = false;
-	bool show_line_window = true;
 	bool show_rasterization_window = false;
 
-	int flag = 0;
 	cout << "render loop" << endl;
 	// 渲染循环 render loop
 	while (!glfwWindowShouldClose(window))
 	{
-		flag++;
 		processInput(window);
 		glfwPollEvents();
 		ImGui_ImplGlfwGL3_NewFrame();
@@ -344,8 +154,8 @@ int main() {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("Windows"))
 			{
-				ImGui::MenuItem("Line Window", NULL, &show_line_window);
-				if (show_line_window == true)
+				ImGui::MenuItem("Line Window", NULL, &show_triangle_window);
+				if (show_triangle_window == true)
 				{
 					show_rasterization_window = false;
 					show_circle_window = false;
@@ -354,13 +164,13 @@ int main() {
 				if (show_circle_window == true)
 				{
 					show_rasterization_window = false;
-					show_line_window = false;
+					show_triangle_window = false;
 				}
 				ImGui::MenuItem("Rasterization Window", NULL, &show_rasterization_window);
 				if (show_rasterization_window == true)
 				{
 					show_circle_window = false;
-					show_line_window = false;
+					show_triangle_window = false;
 				}
 
 				ImGui::EndMenu();
@@ -371,15 +181,33 @@ int main() {
 		{
 			ImGui::TextWrapped("Please click 'Windows' to choose different functions. \n\n");
 		}
-
 		ImGui::Spacing();
 		ImGui::Text("Hello!");
 		ImGui::End();
-		// 主窗口绘制完成--------------------------------------------------------------------------
-		
+		// 主窗口绘制完成--------------------------------------------------------------------------	
 		// rendering lines
-		if (show_line_window)
+		if (show_triangle_window)
 		{
+			ImGui::Begin("Triangle Window", &show_triangle_window);
+			ImGui::InputInt2("point0", point0);
+			ImGui::InputInt2("point1", point1);
+			ImGui::InputInt2("point2", point2);
+			ImGui::SliderInt("x0", &point0[0], -600, 600);
+			ImGui::SliderInt("y0", &point0[1], -400, 400);
+			ImGui::SliderInt("x1", &point1[0], -600, 600);
+			ImGui::SliderInt("y1", &point1[1], -400, 400);
+			ImGui::SliderInt("x2", &point2[0], -600, 600);
+			ImGui::SliderInt("y2", &point2[1], -400, 400);
+
+			vector<float> p1 = normalize(BresenhamLine(point0[0], point0[1], point2[0], point2[1]), 1200, 800);
+			int length1 = p1.size();
+			float* line1 = getRealCoordinate(p1, length1);
+			vector<float> p2 = normalize(BresenhamLine(point1[0], point1[1], point2[0], point2[1]), 1200, 800);
+			int length2 = p2.size();
+			float* line2 = getRealCoordinate(p2, length2);
+			vector<float> p3 = normalize(BresenhamLine(point0[0], point0[1], point1[0], point1[1]), 1200, 800);
+			int length3 = p3.size();
+			float* line3 = getRealCoordinate(p3, length3);
 			glBufferData(GL_ARRAY_BUFFER, 3 * length1 * sizeof(float), line1, GL_STATIC_DRAW);
 			glPointSize(5.0f);
 			glDrawArrays(GL_POINTS, 0, length1 / 2);
@@ -389,6 +217,10 @@ int main() {
 			glBufferData(GL_ARRAY_BUFFER, 3 * length3 * sizeof(float), line3, GL_STATIC_DRAW);
 			glPointSize(5.0f);
 			glDrawArrays(GL_POINTS, 0, length3 / 2);
+			ImGui::End();
+			delete[]line1;
+			delete[]line2;
+			delete[]line3;
 		}
 		// rendering points
 		if (show_circle_window)
@@ -402,20 +234,30 @@ int main() {
 			glPointSize(5.0f);
 			glDrawArrays(GL_POINTS, 0, circleLength/2);
 			ImGui::End();
+			delete[] circle;
 		}
 		if (show_rasterization_window) {
-			
-			Point v1(-200, 0);
-			Point v2(0, 100);
-			Point v3(200, -100);
+			ImGui::Begin("Rasterization Window", &show_rasterization_window);
+			ImGui::InputInt2("point0", point0);
+			ImGui::InputInt2("point1", point1);
+			ImGui::InputInt2("point2", point2);
+			ImGui::SliderInt("x0", &point0[0], -600, 600);
+			ImGui::SliderInt("y0", &point0[1], -400, 400);
+			ImGui::SliderInt("x1", &point1[0], -600, 600);
+			ImGui::SliderInt("y1", &point1[1], -400, 400);
+			ImGui::SliderInt("x2", &point2[0], -600, 600);
+			ImGui::SliderInt("y2", &point2[1], -400, 400);
+			Point v1(point0[0], point0[1]);
+			Point v2(point1[0], point1[1]);
+			Point v3(point2[0], point2[1]);
 			vector<float> c1 = normalize(drawTriangle(v1, v2, v3), 1200, 800);
 			int clength = c1.size();
 			float* c2 = getRealCoordinate(c1, clength);
 			glBufferData(GL_ARRAY_BUFFER, 3 * clength * sizeof(float), c2, GL_STATIC_DRAW);
 			glPointSize(5.0f);
 			glDrawArrays(GL_POINTS, 0, clength / 2);
-			
-
+			ImGui::End();
+			delete[] c2;
 		}
 		// Rendering
 		int display_w, display_h;
@@ -426,7 +268,6 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 
-	delete[] line1;
 	// 释放/删除之前分配的所有资源
 	ImGui_ImplGlfwGL3_Shutdown();
 	ImGui::DestroyContext();
@@ -455,146 +296,4 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	// 设置窗口的维度
 	glViewport(0, 0, width, height);
-}
-
-// 迭代得到y坐标
-void getYcoordinate(int* Ycoordinate, int pi, int dx, int dy, int length) {
-	int parm1 = 2 * dy;
-	int parm2 = 2 * dy - 2 * dx;
-	for (int i = 0; i < length; i++) {
-		if (i == length - 1) {
-			// 计算完成，此处为终点坐标
-			return;
-		}
-		if (pi <= 0) {
-			Ycoordinate[i + 1] = Ycoordinate[i];
-			pi += parm1;
-		}
-		else {
-			Ycoordinate[i + 1] = Ycoordinate[i] + 1;
-			pi += parm2;
-		}
-	}
-}
-
-
-// 两值交换
-void swap(int *a, int *b) {
-	int temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
-// 归一化到[-1,1]
-vector<float> normalize(vector<int>p, int width, int height) {
-	vector<float> q;
-	int length = p.size();
-	for (int i = 0; i < length; i = i + 2) {
-		q.push_back(float(p[i]) / float(width / 2));
-		q.push_back(float(p[i + 1]) / float(height / 2));
-	}
-	return q;
-}
-
-// 由起点终点坐标得到连线上所有点的xy坐标：x0,y0,...xi,yi,...，x1,y1
-vector<int> BresenhamLine(int x0, int y0, int x1, int y1) {
-	int dx = x1 - x0;
-	int dy = y1 - y0;
-	int length = 0;
-	int p0 = 0;
-	int Xcoordinate[1201] = { 0 };
-	int Ycoordinate[1201] = { 0 };
-	// 斜率不存在
-	if (x0 == x1) {
-		length = fabs(y1 - y0) + 1;
-		if (y0 > y1) {
-			swap(y0, y1);
-		}
-		for (int i = 0; i < length; i++) {
-			Xcoordinate[i] = x0;
-			Ycoordinate[i] = y0 + i;
-		}
-	} // 斜率存在
-	else {
-		// |m|<=`1,point0左，point1右
-		// |m|>1，point0下， point1上
-		float m = float(y1 - y0) / float(x1 - x0);
-		if (fabs(m) <= 1 && x0 > x1) {
-			swap(x0, x1);
-			swap(y0, y1);
-		}
-		if (fabs(m) > 1 && y0 > y1) {
-			swap(x0, x1);
-			swap(y0, y1);
-		}
-		m = float(y1 - y0) / float(x1 - x0);
-		dx = x1 - x0;
-		dy = y1 - y0;
-		if (fabs(m) <= 1) { // [-1,1]
-			length = x1 - x0 + 1;
-			for (int i = 0; i < length; i++) {
-				Xcoordinate[i] = x0 + i;
-			}
-			if (dy < 0) { // [-1,0)
-				Ycoordinate[0] = -y0;
-				// 关于x轴对称使point1'在point0右上
-				Ycoordinate[length - 1] = -y1;
-				p0 = 2 * (-dy) - dx;
-				getYcoordinate(Ycoordinate, p0, dx, -dy, length);
-				// point1'返回point1
-				for (int i = 0; i < length; i++) {
-					Ycoordinate[i] = -Ycoordinate[i];
-				}
-			}
-			else { // [0,1] 
-				Ycoordinate[0] = y0;
-				Ycoordinate[length - 1] = y1;
-				p0 = 2 * dy - dx;
-				getYcoordinate(Ycoordinate, p0, dx, dy, length);
-			}
-		}
-		else { // m < -1 || m > 1
-			length = y1 - y0 + 1;
-			for (int i = 0; i < length; i++) {
-				Ycoordinate[i] = y0 + i;
-			}
-			if (dx < 0) { // m < -1
-				Xcoordinate[0] = -x0;
-				Xcoordinate[length - 1] = -x1;
-				p0 = 2 * (-dx) - dy;
-				getYcoordinate(Xcoordinate, p0, dy, -dx, length);
-				for (int i = 0; i < length; i++) {
-					Xcoordinate[i] = -Xcoordinate[i];
-				}
-			}
-			else {
-				Xcoordinate[0] = x0;
-				Xcoordinate[length - 1] = x1;
-				p0 = 2 * dx - dy;
-				getYcoordinate(Xcoordinate, p0, dy, dx, length);
-			}
-		}
-	}
-	vector<int> p;
-	int j = 0;
-	for (int i = 0; i < length * 2; i = i + 2) {
-		p.push_back(Xcoordinate[j]);
-		p.push_back(Ycoordinate[j]);
-		j++;
-	}
-	return p;
-}
-
-// 把含有x,y坐标的vector转换成float*
-float* getRealCoordinate(vector<float> p, int length) {
-	int length1 = length * 3;
-	float* line = new float[length1];
-	int index = 0;
-	for (int i = 0; i < length; i = i + 2) {
-		line[index] = p[i];
-		line[index + 1] = p[i + 1];
-		line[index + 2] = 0.0f;
-		index = index + 3;
-	}
-	return line;
 }
