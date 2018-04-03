@@ -243,6 +243,7 @@ int main() {
 			else {
 				glDisable(GL_DEPTH_TEST);
 			}
+			// ÈÆy=zÐý×ª
 			model = glm::rotate(model, (GLfloat)glfwGetTime() * 50.0f, glm::vec3(0.0f, 1.0f, 1.0f));
 			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
