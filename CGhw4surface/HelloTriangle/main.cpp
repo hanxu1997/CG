@@ -7,7 +7,6 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include "draw.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,7 +21,6 @@ const char *vertexShaderSource = "#version 440 core\n"
 		"uniform mat4 model;\n"
 		"uniform mat4 view;\n"
 		"uniform mat4 projection;\n"
-
 		"void main()\n"
 		"{\n"
 		"   gl_Position =  projection * view * model * vec4(Position, 1.0);\n"
@@ -124,11 +122,14 @@ int main() {
 	// 顶点缓冲对象，顶点数组对象
 	unsigned int VBO;
 	unsigned int VAO;
+	unsigned int EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
 	// 绑定
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	// 链接顶点属性
 	// 位置属性
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
@@ -136,68 +137,49 @@ int main() {
 	// 颜色属性
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-/*
+
+
+	// 8个顶点坐标
 	float vertices[] = {
-		//     ---- 位置 ----       ---- 颜色 ----   
-		-0.3f, -0.3f, 0.0f,  0.0f, 0.0f, 1.0f,
-		0.3f, -0.3f,  0.0f,  0.0f, 0.0f, 1.0f,
-		0.3f,  0.3f,  0.0f,  0.0f, 0.0f, 1.0f,
-		0.3f,  0.3f,  0.0f,  1.0f, 0.0f, 0.0f,
-		-0.3f,  0.3f,  0.0f,  1.0f, 0.0f, 0.0f,
-		-0.3f, -0.3f,  0.0f,  1.0f, 0.0f, 0.0f,
+		-0.2f,  0.2f,  0.2f,  0.0f, 1.0f, 0.8f,
+		0.2f,  0.2f,  0.2f,  0.0f, 1.0f, 1.0f,
+		0.2f, -0.2f,  0.2f,  0.0f, 0.8f, 1.0f,
+		-0.2f, -0.2f,  0.2f,  0.0f, 0.6f, 1.0f,
+		-0.2f,  0.2f,  -0.2f,  0.0f, 0.4f, 1.0f,
+		0.2f,  0.2f,  -0.2f,  0.0f, 0.2f, 1.0f,
+		0.2f, -0.2f,  -0.2f,  0.0f, 0.0f, 1.0f,
+		-0.2f, -0.2f,  -0.2f,  0.0f, 0.0f, 0.8f
+
 	};
-	*/
-	// 三角形位置和颜色
-	float vertices[] = {
-		-0.4f, -0.4f, -0.4f,  0.0f, 0.0f, 0.0f,
-		0.4f, -0.4f, -0.4f,  1.0f, 0.0f, 0.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f, 0.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f, 0.0f,
-		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 0.0f, 0.0f,
-
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f, 0.0f,
-		0.4f, -0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 1.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 1.0f, 0.0f,
-		-0.4f,  0.4f,  0.4f,  0.0f, 1.0f, 0.0f,
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f, 0.0f,
-
-		-0.4f,  0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		-0.4f,  0.4f, -0.4f,  1.0f, 1.0f, 0.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f, 0.0f,
-		-0.4f,  0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f, 0.0f,
-		0.4f, -0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		0.4f, -0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		0.4f, -0.4f,  0.4f,  0.0f, 0.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		0.4f, -0.4f, -0.4f,  1.0f, 1.0f, 0.0f,
-		0.4f, -0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		0.4f, -0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		-0.4f, -0.4f,  0.4f,  0.0f, 0.0f, 0.0f,
-		-0.4f, -0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-
-		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f, 0.0f,
-		0.4f,  0.4f, -0.4f,  1.0f, 1.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		0.4f,  0.4f,  0.4f,  1.0f, 0.0f, 0.0f,
-		-0.4f,  0.4f,  0.4f,  0.0f, 0.0f, 0.0f,
-		-0.4f,  0.4f, -0.4f,  0.0f, 1.0f, 0.0f
+	// 索引
+	unsigned int indices[] = {
+		0, 1, 2,
+		2, 3, 0,
+		4, 5, 7,
+		5, 6, 7,
+		0, 4, 3,
+		4, 7, 3,
+		1, 5, 2,
+		5, 6, 2,
+		4, 5, 0, 
+		5, 1, 0,
+		7, 6, 3,
+		6, 2, 3
 	};
-	
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	bool depth = true;
+	float xDistance = 0.0f;
+	bool xRight = true;
+	float translateV = 0.02f;
+	float scaleSize = 1.0f;
+	bool bigger = true;
+	float scaleV = 0.02f;
 	ImGuiWindowFlags window_flags = 0;
-	bool show_triangle_window = true;
-	bool show_circle_window = false;
-	bool show_rasterization_window = false;
-	// 深度！
-	glEnable(GL_DEPTH_TEST);
+	bool show_rotation_window = true;
+	bool show_translation_window = false;
+	bool show_scaling_window = false;
+	
 	cout << "render loop" << endl;
 	// 渲染循环 render loop
 	while (!glfwWindowShouldClose(window))
@@ -215,23 +197,23 @@ int main() {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("Windows"))
 			{
-				ImGui::MenuItem("Line Window", NULL, &show_triangle_window);
-				if (show_triangle_window == true)
+				ImGui::MenuItem("Rotation Window", NULL, &show_rotation_window);
+				if (show_rotation_window == true)
 				{
-					show_rasterization_window = false;
-					show_circle_window = false;
+					show_scaling_window = false;
+					show_translation_window = false;
 				}
-				ImGui::MenuItem("Circle Window", NULL, &show_circle_window);
-				if (show_circle_window == true)
+				ImGui::MenuItem("Translation Window", NULL, &show_translation_window);
+				if (show_translation_window == true)
 				{
-					show_rasterization_window = false;
-					show_triangle_window = false;
+					show_scaling_window = false;
+					show_rotation_window = false;
 				}
-				ImGui::MenuItem("Rasterization Window", NULL, &show_rasterization_window);
-				if (show_rasterization_window == true)
+				ImGui::MenuItem("Scaling Window", NULL, &show_scaling_window);
+				if (show_scaling_window == true)
 				{
-					show_circle_window = false;
-					show_triangle_window = false;
+					show_translation_window = false;
+					show_rotation_window = false;
 				}
 
 				ImGui::EndMenu();
@@ -246,13 +228,21 @@ int main() {
 		ImGui::Text("Hello!");
 		ImGui::End();
 		// 主窗口绘制完成--------------------------------------------------------------------------	
-		// rendering lines
-		if (show_triangle_window)
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 projection;
+		if (show_rotation_window)
 		{
-			ImGui::Begin("Triangle Window", &show_triangle_window);
-			glm::mat4 model;
-			glm::mat4 view;
-			glm::mat4 projection;
+			ImGui::Begin("Rotation Window", &show_rotation_window);
+			ImGui::Spacing();
+			ImGui::Checkbox("Enable", &depth);
+			if (depth) {
+				// 深度！
+				glEnable(GL_DEPTH_TEST);
+			}
+			else {
+				glDisable(GL_DEPTH_TEST);
+			}
 			model = glm::rotate(model, (GLfloat)glfwGetTime() * 50.0f, glm::vec3(0.0f, 1.0f, 1.0f));
 			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
@@ -264,20 +254,71 @@ int main() {
 			glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(EBO);
 			ImGui::End();
 		}
-		// rendering points
-		if (show_circle_window)
-		{
-			ImGui::Begin("Circle Window", &show_circle_window);
+	
+		if (show_translation_window) {
+			ImGui::Begin("Translation Window", &show_translation_window);
+			ImGui::Spacing();
+			ImGui::SliderFloat("translateV", &translateV, 0.0f, 0.1f);
+			if (xRight == true) {
+				xDistance += translateV;
+				if (xDistance > 0.8f) {
+					xRight = false;
+				}
+			} else {
+				xDistance -= translateV;
+				if (xDistance < -0.8f) {
+					xRight = true;
+				}
+			}
+			model = glm::translate(model, glm::vec3(xDistance, 0.0f, 0.0f));
+			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+			glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(EBO);
 			ImGui::End();
-
 		}
-		if (show_rasterization_window) {
-			ImGui::Begin("Rasterization Window", &show_rasterization_window);
-			ImGui::End();
 
+		if (show_scaling_window) {
+			ImGui::Begin("Scaling Window", &show_scaling_window);
+			ImGui::Spacing();
+			ImGui::SliderFloat("scaleV", &scaleV, 0.0f, 0.1f);
+			if (bigger == true) {
+				scaleSize += scaleV;
+				if (scaleSize > 2.0f) {
+					bigger = false;
+				}
+			} else {
+				scaleSize -= scaleV;
+				if (scaleSize < 0.2f) {
+					bigger = true;
+				}
+			}
+			model = glm::scale(model, glm::vec3(scaleSize, scaleSize, scaleSize));
+			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+			glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(EBO);
+			ImGui::End();
 		}
 		// Rendering
 		int display_w, display_h;
