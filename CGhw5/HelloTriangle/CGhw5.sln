@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CGhw4", "CGhw4.vcxproj", "{47DE6593-D268-4285-B852-9E2A7BC4372A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloTriangle", "HelloTriangle.vcxproj", "{47DE6593-D268-4285-B852-9E2A7BC4372A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5E7BF991-4F34-4F66-AEBA-B8FDBDAA1C3D}
+		SolutionGuid = {A4890B95-FB01-4EC8-A0E2-3E21A7985A66}
 	EndGlobalSection
 EndGlobal
