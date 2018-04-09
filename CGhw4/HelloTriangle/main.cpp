@@ -170,10 +170,10 @@ int main() {
 
 	bool depth = true;
 	float xDistance = 0.0f;
-	bool xRight = true;
+	bool toRight = true;
 	float translateV = 0.02f;
 	float scaleSize = 1.0f;
-	bool bigger = true;
+	bool toBigger = true;
 	float scaleV = 0.02f;
 	ImGuiWindowFlags window_flags = 0;
 	bool show_rotation_window = true;
@@ -264,15 +264,15 @@ int main() {
 			ImGui::Begin("Translation Window", &show_translation_window);
 			ImGui::Spacing();
 			ImGui::SliderFloat("translateV", &translateV, 0.0f, 0.1f);
-			if (xRight == true) {
+			if (toRight == true) {
 				xDistance += translateV;
 				if (xDistance > 0.8f) {
-					xRight = false;
+					toRight = false;
 				}
 			} else {
 				xDistance -= translateV;
 				if (xDistance < -0.8f) {
-					xRight = true;
+					toRight = true;
 				}
 			}
 			model = glm::translate(model, glm::vec3(xDistance, 0.0f, 0.0f));
@@ -295,15 +295,15 @@ int main() {
 			ImGui::Begin("Scaling Window", &show_scaling_window);
 			ImGui::Spacing();
 			ImGui::SliderFloat("scaleV", &scaleV, 0.0f, 0.1f);
-			if (bigger == true) {
+			if (toBigger == true) {
 				scaleSize += scaleV;
 				if (scaleSize > 2.0f) {
-					bigger = false;
+					toBigger = false;
 				}
 			} else {
 				scaleSize -= scaleV;
 				if (scaleSize < 0.2f) {
-					bigger = true;
+					toBigger = true;
 				}
 			}
 			model = glm::scale(model, glm::vec3(scaleSize, scaleSize, scaleSize));
@@ -335,6 +335,7 @@ int main() {
 	ImGui::DestroyContext();
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 	return 0;
 }

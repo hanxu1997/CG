@@ -40,7 +40,7 @@
     <ProjectGuid>{47DE6593-D268-4285-B852-9E2A7BC4372A}</ProjectGuid>
     <RootNamespace>HelloTriangle</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
-    <ProjectName>CGhw3</ProjectName>
+    <ProjectName>CGhw4</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
