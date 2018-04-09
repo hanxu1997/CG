@@ -168,15 +168,23 @@ int main() {
 	};
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	bool depth = true;
-	float xDistance = 0.0f;
-	bool xRight = true;
+	float ortho_left = -4.0f,
+		ortho_right = 4.0f,
+		ortho_bottom = -4.0f,
+		ortho_top = 4.0f,
+		ortho_near = 0.1f,
+		ortho_far = 10.0f;
+	float pres_fov = 45.0f,
+		pres_ratio = 1.5f,
+		pres_near = 0.1f,
+		pres_far = 100.0f;
+
 	float translateV = 0.02f;
 	float scaleSize = 1.0f;
 	bool bigger = true;
 	float scaleV = 0.02f;
 	ImGuiWindowFlags window_flags = 0;
-	bool show_rotation_window = true;
+	bool show_orthographic_window = true;
 	bool show_translation_window = false;
 	bool show_scaling_window = false;
 	
@@ -197,8 +205,8 @@ int main() {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("Windows"))
 			{
-				ImGui::MenuItem("Rotation Window", NULL, &show_rotation_window);
-				if (show_rotation_window == true)
+				ImGui::MenuItem("orthographic projection", NULL, &show_orthographic_window);
+				if (show_orthographic_window == true)
 				{
 					show_scaling_window = false;
 					show_translation_window = false;
@@ -207,13 +215,13 @@ int main() {
 				if (show_translation_window == true)
 				{
 					show_scaling_window = false;
-					show_rotation_window = false;
+					show_orthographic_window = false;
 				}
 				ImGui::MenuItem("Scaling Window", NULL, &show_scaling_window);
 				if (show_scaling_window == true)
 				{
 					show_translation_window = false;
-					show_rotation_window = false;
+					show_orthographic_window = false;
 				}
 
 				ImGui::EndMenu();
@@ -231,22 +239,22 @@ int main() {
 		glm::mat4 model;
 		glm::mat4 view;
 		glm::mat4 projection;
-		if (show_rotation_window)
+		// 深度测试
+		glEnable(GL_DEPTH_TEST);
+		if (show_orthographic_window)
 		{
-			ImGui::Begin("Rotation Window", &show_rotation_window);
-			ImGui::Spacing();
-			ImGui::Checkbox("Enable", &depth);
-			if (depth) {
-				// 深度！
-				glEnable(GL_DEPTH_TEST);
-			}
-			else {
-				glDisable(GL_DEPTH_TEST);
-			}
-			// 绕y=z旋转
-			model = glm::rotate(model, (GLfloat)glfwGetTime() * 50.0f, glm::vec3(0.0f, 1.0f, 1.0f));
+			ImGui::Begin("orthographic projection", &show_orthographic_window);
+			// ImGui::Spacing();
+			ImGui::SliderFloat("left", &ortho_left, -20.0f, 20.0f);
+			ImGui::SliderFloat("right", &ortho_right, -20.0f, 20.0f);
+			ImGui::SliderFloat("bottom", &ortho_bottom, -20.0f, 20.0f);
+			ImGui::SliderFloat("top", &ortho_top, -20.0f, 20.0f);
+			ImGui::SliderFloat("near", &ortho_near, 0.0f, 1.0f);
+			ImGui::SliderFloat("far", &ortho_far, 0.0f, 20.0f);
+			model = glm::translate(model, glm::vec3(-1.5f, 0.5f, -1.5f));
 			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			// 正交投影
+			projection = glm::ortho(ortho_left, ortho_right, ortho_bottom, ortho_top, ortho_near, ortho_far);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
 			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
@@ -262,22 +270,15 @@ int main() {
 	
 		if (show_translation_window) {
 			ImGui::Begin("Translation Window", &show_translation_window);
-			ImGui::Spacing();
-			ImGui::SliderFloat("translateV", &translateV, 0.0f, 0.1f);
-			if (xRight == true) {
-				xDistance += translateV;
-				if (xDistance > 0.8f) {
-					xRight = false;
-				}
-			} else {
-				xDistance -= translateV;
-				if (xDistance < -0.8f) {
-					xRight = true;
-				}
-			}
-			model = glm::translate(model, glm::vec3(xDistance, 0.0f, 0.0f));
+			model = glm::translate(model, glm::vec3(-1.5f, 0.5f, -1.5f));
 			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			ImGui::SliderFloat("fov", &pres_fov, 0.0f, 90.0f);
+			ImGui::SliderFloat("ratio", &pres_ratio, 0.0f, 3.0f);
+			ImGui::SliderFloat("near", &pres_near, 0.0f, 3.0f);
+			ImGui::SliderFloat("far", &pres_far, 0.0f, 100.0f);
+			// 透视投影
+			projection = glm::perspective(pres_fov, pres_ratio, pres_near, pres_far);
+			// projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
 			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
