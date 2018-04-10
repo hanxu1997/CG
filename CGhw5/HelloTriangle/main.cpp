@@ -36,20 +36,13 @@ const char *fragmentShaderSource = "#version 440 core\n"
 		"   FragColor = vec4(vetexColor, 1.0f);\n"
 		"}\n\0";
 // camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
+Camera camera;
 bool firstMouse = true;
-float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
-float pitch = 0.0f;
 float lastX = 1200.0f / 2.0;
 float lastY = 800.0 / 2.0;
-float fov = 45.0f;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
-
 void processInput(GLFWwindow *);
 void framebuffer_size_callback(GLFWwindow*, int, int);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -83,14 +76,11 @@ int main() {
 		cout << "Failed to initialize GLAD" << endl;
 		return -1;
 	}
-
 	// Setup ImGui binding
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui_ImplGlfwGL3_Init(window, true);
 
-	// Setup style
-	// ImGui::StyleColorsDark();
 	ImVec4 clear_color = ImVec4(0.92f, 0.92f, 0.92f, 1.0f);
 
 	// 创建并编译着色器程序
@@ -344,8 +334,8 @@ int main() {
 			ImGui::Begin("Camera Class", &show_camera_window);
 			ImGui::Spacing();
 			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-			view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			view = camera.GetViewMatrix();
+			projection = glm::perspective(camera.fov, 1.5f, 0.1f, 100.0f);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
 			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
@@ -390,13 +380,13 @@ void processInput(GLFWwindow *window)
 	}
 	GLfloat cameraSpeed = 0.05f;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.moveForward(deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.moveBack(deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp))*cameraSpeed;
+		camera.moveLeft(deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp))*cameraSpeed;
+		camera.moveRight(deltaTime);
 
 }
 
@@ -413,25 +403,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	float yoffset = lastY - ypos;
 	lastX = xpos;
 	lastY = ypos;
-
-	float sensitivity = 0.02;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
+
+
 
 // 对窗口注册一个回调函数，它会在每次窗口大小被调整的时候被调用
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
