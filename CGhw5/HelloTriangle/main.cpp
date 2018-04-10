@@ -185,8 +185,8 @@ int main() {
 	float scaleV = 0.02f;
 	ImGuiWindowFlags window_flags = 0;
 	bool show_orthographic_window = true;
-	bool show_translation_window = false;
-	bool show_scaling_window = false;
+	bool show_perspective_window = false;
+	bool show_viewchanging_window = false;
 	
 	cout << "render loop" << endl;
 	// äÖÈ¾Ñ­»· render loop
@@ -205,22 +205,22 @@ int main() {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("Windows"))
 			{
-				ImGui::MenuItem("orthographic projection", NULL, &show_orthographic_window);
+				ImGui::MenuItem("Orthographic Projection", NULL, &show_orthographic_window);
 				if (show_orthographic_window == true)
 				{
-					show_scaling_window = false;
-					show_translation_window = false;
+					show_viewchanging_window = false;
+					show_perspective_window = false;
 				}
-				ImGui::MenuItem("Translation Window", NULL, &show_translation_window);
-				if (show_translation_window == true)
+				ImGui::MenuItem("Perspective Projection", NULL, &show_perspective_window);
+				if (show_perspective_window == true)
 				{
-					show_scaling_window = false;
+					show_viewchanging_window = false;
 					show_orthographic_window = false;
 				}
-				ImGui::MenuItem("Scaling Window", NULL, &show_scaling_window);
-				if (show_scaling_window == true)
+				ImGui::MenuItem("View Changing", NULL, &show_viewchanging_window);
+				if (show_viewchanging_window == true)
 				{
-					show_translation_window = false;
+					show_perspective_window = false;
 					show_orthographic_window = false;
 				}
 
@@ -243,7 +243,7 @@ int main() {
 		glEnable(GL_DEPTH_TEST);
 		if (show_orthographic_window)
 		{
-			ImGui::Begin("orthographic projection", &show_orthographic_window);
+			ImGui::Begin("Orthographic Projection", &show_orthographic_window);
 			// ImGui::Spacing();
 			ImGui::SliderFloat("left", &ortho_left, -20.0f, 20.0f);
 			ImGui::SliderFloat("right", &ortho_right, -20.0f, 20.0f);
@@ -268,8 +268,8 @@ int main() {
 			ImGui::End();
 		}
 	
-		if (show_translation_window) {
-			ImGui::Begin("Translation Window", &show_translation_window);
+		if (show_perspective_window) {
+			ImGui::Begin("Perspective Projection", &show_perspective_window);
 			model = glm::translate(model, glm::vec3(-1.5f, 0.5f, -1.5f));
 			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 			ImGui::SliderFloat("fov", &pres_fov, 0.0f, 90.0f);
@@ -292,23 +292,14 @@ int main() {
 			ImGui::End();
 		}
 
-		if (show_scaling_window) {
-			ImGui::Begin("Scaling Window", &show_scaling_window);
+		if (show_viewchanging_window) {
+			ImGui::Begin("View Changing", &show_viewchanging_window);
 			ImGui::Spacing();
-			ImGui::SliderFloat("scaleV", &scaleV, 0.0f, 0.1f);
-			if (bigger == true) {
-				scaleSize += scaleV;
-				if (scaleSize > 2.0f) {
-					bigger = false;
-				}
-			} else {
-				scaleSize -= scaleV;
-				if (scaleSize < 0.2f) {
-					bigger = true;
-				}
-			}
-			model = glm::scale(model, glm::vec3(scaleSize, scaleSize, scaleSize));
-			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			GLfloat radius = 4.0f;
+			GLfloat camX = sin(glfwGetTime()) * radius;
+			GLfloat camZ = cos(glfwGetTime()) * radius;
+			view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
