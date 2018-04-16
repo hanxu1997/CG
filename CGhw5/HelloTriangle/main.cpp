@@ -41,11 +41,8 @@ bool firstMouse = true;
 float lastX = 1200.0f / 2.0;
 float lastY = 800.0 / 2.0;
 // timing
-<<<<<<< HEAD
 float deltaTime = 0.0f;
-=======
 float deltaTime = 0.0f;	// time between current frame and last frame
->>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 float lastFrame = 0.0f;
 void processInput(GLFWwindow *);
 void framebuffer_size_callback(GLFWwindow*, int, int);
@@ -402,10 +399,6 @@ void processInput(GLFWwindow *window)
 		camera.moveLeft(deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.moveRight(deltaTime);
-<<<<<<< HEAD
-=======
-
->>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
