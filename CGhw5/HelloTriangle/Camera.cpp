@@ -21,19 +21,16 @@ Camera::Camera(glm::vec3 position, glm::vec3 worldup, GLfloat yaw, GLfloat pitch
 	this->cameraPitch = pitch;
 	this->updateCameraVectors();
 }
-
 // W
 void Camera::moveForward(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
 	this->cameraPos += v * this->cameraFront;
 }
-
 // A
 void Camera::moveBack(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
 	this->cameraPos -= v * cameraFront;
 }
- 
 // S
 void Camera::moveLeft(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
@@ -45,10 +42,6 @@ void Camera::moveRight(GLfloat deltaTime) {
 	this->cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp))* v;
 }
 
-void Camera::moveLeft(GLfloat deltaTime) {
-	GLfloat v = this->cameraSpeed * deltaTime;
-	cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * v;
-}
 
 void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset) {
 	xoffset *= this->cameraSensitivity;
