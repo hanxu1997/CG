@@ -41,7 +41,11 @@ bool firstMouse = true;
 float lastX = 1200.0f / 2.0;
 float lastY = 800.0 / 2.0;
 // timing
+<<<<<<< HEAD
 float deltaTime = 0.0f;
+=======
+float deltaTime = 0.0f;	// time between current frame and last frame
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 float lastFrame = 0.0f;
 void processInput(GLFWwindow *);
 void framebuffer_size_callback(GLFWwindow*, int, int);
@@ -341,6 +345,24 @@ int main() {
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 			glBindVertexArray(EBO);
 		}
+		if (show_camera_window) {
+			ImGui::Begin("Camera Class", &show_camera_window);
+			ImGui::Spacing();
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			view = camera.GetViewMatrix();
+			projection = glm::perspective(camera.fov, 1.5f, 0.1f, 100.0f);
+			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
+			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
+			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+			glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(EBO);
+			ImGui::End();
+		}
 		// Rendering
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -380,6 +402,10 @@ void processInput(GLFWwindow *window)
 		camera.moveLeft(deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.moveRight(deltaTime);
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)

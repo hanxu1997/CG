@@ -21,27 +21,44 @@ Camera::Camera(glm::vec3 position, glm::vec3 worldup, GLfloat yaw, GLfloat pitch
 	this->cameraPitch = pitch;
 	this->updateCameraVectors();
 }
+<<<<<<< HEAD
 // W
+=======
+
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 void Camera::moveForward(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
 	this->cameraPos += v * this->cameraFront;
 }
+<<<<<<< HEAD
 // A
+=======
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 void Camera::moveBack(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
 	this->cameraPos -= v * cameraFront;
 }
+<<<<<<< HEAD
 // S
 void Camera::moveLeft(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
 	cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * v;
 }
 // D
+=======
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 void Camera::moveRight(GLfloat deltaTime) {
 	GLfloat v = this->cameraSpeed * deltaTime;
 	this->cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp))* v;
 }
+<<<<<<< HEAD
 
+=======
+void Camera::moveLeft(GLfloat deltaTime) {
+	GLfloat v = this->cameraSpeed * deltaTime;
+	cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * v;
+}
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 
 void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset) {
 	xoffset *= this->cameraSensitivity;
@@ -54,6 +71,11 @@ void Camera::ProcessMouseMovement(GLfloat xoffset, GLfloat yoffset) {
 	if (this->cameraPitch < -89.0f) {
 		this->cameraPitch = -89.0f;
 	}
+<<<<<<< HEAD
+=======
+	
+
+>>>>>>> d8e0237d1e00f910b41b724232fdb0012882bc6d
 	this->updateCameraVectors();
 }
 
