@@ -14,7 +14,7 @@
 
 using namespace std;
 
-// ¶¥µã×ÅÉ«Æ÷Ô´Âë
+// é¡¶ç‚¹ç€è‰²å™¨æºç 
 const char *vertexShaderSource = "#version 440 core\n"
 		"layout (location = 0) in vec3 Position;\n"
 		"layout (location = 1) in vec3 Color;\n"
@@ -27,7 +27,7 @@ const char *vertexShaderSource = "#version 440 core\n"
 		"   gl_Position =  projection * view * model * vec4(Position, 1.0);\n"
 		"   vetexColor = Color;\n"
 		"}\0";
-// Æ¬¶Î×ÅÉ«Æ÷Ô´Âë
+// ç‰‡æ®µç€è‰²å™¨æºç 
 const char *fragmentShaderSource = "#version 440 core\n"
 		"out vec4 FragColor;\n"
 		"in vec3 vetexColor;\n"
@@ -35,28 +35,33 @@ const char *fragmentShaderSource = "#version 440 core\n"
 		"{\n"
 		"   FragColor = vec4(vetexColor, 1.0f);\n"
 		"}\n\0";
-// camera
-Camera camera;
+// Function prototypes
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void Do_Movement();
+
+// Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+bool keys[1024];
+GLfloat lastX = 600, lastY = 400;
 bool firstMouse = true;
-float lastX = 1200.0f / 2.0;
-float lastY = 800.0 / 2.0;
-// timing
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
 void processInput(GLFWwindow *);
 void framebuffer_size_callback(GLFWwindow*, int, int);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 int main() {
-	// ³õÊ¼»¯GLFW
+	// åˆå§‹åŒ–GLFW
 	glfwInit();
-	// ÅäÖÃGLFW
+	// é…ç½®GLFW
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// ´´½¨´°¿Ú¶ÔÏó£¬´æ·ÅËùÓĞºÍ´°¿ÚÏà¹ØµÄÊı¾İ£¬
-	// ¶øÇÒ»á±»GLFWµÄÆäËûº¯ÊıÆµ·±µØÓÃµ½
+	// åˆ›å»ºçª—å£å¯¹è±¡ï¼Œå­˜æ”¾æ‰€æœ‰å’Œçª—å£ç›¸å…³çš„æ•°æ®ï¼Œ
+	// è€Œä¸”ä¼šè¢«GLFWçš„å…¶ä»–å‡½æ•°é¢‘ç¹åœ°ç”¨åˆ°
 	GLFWwindow* window = glfwCreateWindow(1200, 800, "HellloTriangle", NULL, NULL);
 	if (window == NULL)
 	{
@@ -64,31 +69,39 @@ int main() {
 		glfwTerminate();
 		return -1;
 	}
-	// Í¨ÖªGLFW½«ÎÒÃÇ´°¿ÚµÄÉÏÏÂÎÄÉèÖÃÎªµ±Ç°Ïß³ÌµÄÖ÷ÉÏÏÂÎÄ
+	// é€šçŸ¥GLFWå°†æˆ‘ä»¬çª—å£çš„ä¸Šä¸‹æ–‡è®¾ç½®ä¸ºå½“å‰çº¿ç¨‹çš„ä¸»ä¸Šä¸‹æ–‡
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	// camera
+	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
-	// GLAD: ¹ÜÀíµÄOpenGLº¯ÊıÖ¸Õë
-	// µ÷ÓÃÈÎºÎOpenGLº¯ÊıÖ®Ç°ĞèÒª³õÊ¼»¯GLAD
+	glfwSetScrollCallback(window, scroll_callback);
+
+	// æ³¨å†Œè¿™ä¸ªå‡½æ•°ï¼Œå‘Šè¯‰GLFWæˆ‘ä»¬å¸Œæœ›æ¯å½“çª—å£è°ƒæ•´å¤§å°çš„æ—¶å€™è°ƒç”¨è¿™ä¸ªå‡½æ•°
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	// GLAD: ç®¡ç†çš„OpenGLå‡½æ•°æŒ‡é’ˆ
+	// è°ƒç”¨ä»»ä½•OpenGLå‡½æ•°ä¹‹å‰éœ€è¦åˆå§‹åŒ–GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		cout << "Failed to initialize GLAD" << endl;
 		return -1;
 	}
+
 	// Setup ImGui binding
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui_ImplGlfwGL3_Init(window, true);
 
+	// Setup style
+	// ImGui::StyleColorsDark();
 	ImVec4 clear_color = ImVec4(0.92f, 0.92f, 0.92f, 1.0f);
 
-	// ´´½¨²¢±àÒë×ÅÉ«Æ÷³ÌĞò
-	// 1. ¶¥µã×ÅÉ«Æ÷
+	// åˆ›å»ºå¹¶ç¼–è¯‘ç€è‰²å™¨ç¨‹åº
+	// 1. é¡¶ç‚¹ç€è‰²å™¨
 	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-	// ¼ì²é¶¥µã×ÅÉ«Æ÷ÊÇ·ñ±àÒë³É¹¦
+	// æ£€æŸ¥é¡¶ç‚¹ç€è‰²å™¨æ˜¯å¦ç¼–è¯‘æˆåŠŸ
 	int success;
 	char infoLog[512];
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -97,55 +110,55 @@ int main() {
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
 	}
-	// 2. Æ¬¶Î×ÅÉ«Æ÷
+	// 2. ç‰‡æ®µç€è‰²å™¨
 	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragmentShader);
-	// ¼ì²éÆ¬¶Î×ÅÉ«Æ÷ÊÇ·ñ±àÒë³É¹¦
+	// æ£€æŸ¥ç‰‡æ®µç€è‰²å™¨æ˜¯å¦ç¼–è¯‘æˆåŠŸ
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
 	}
-	// Á´½Ó×ÅÉ«Æ÷
+	// é“¾æ¥ç€è‰²å™¨
 	int shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
-	// ¼ì²éÊÇ·ñÁ´½Ó³É¹¦
+	// æ£€æŸ¥æ˜¯å¦é“¾æ¥æˆåŠŸ
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << endl;
 	}
-	// Á´½ÓÍê³ÉºóÉ¾³ı×ÅÉ«Æ÷¶ÔÏó
+	// é“¾æ¥å®Œæˆååˆ é™¤ç€è‰²å™¨å¯¹è±¡
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-	// ¼¤»î×ÅÉ«Æ÷³ÌĞò¶ÔÏó
+	// æ¿€æ´»ç€è‰²å™¨ç¨‹åºå¯¹è±¡
 	glUseProgram(shaderProgram);
 
-	// ¶¥µã»º³å¶ÔÏó£¬¶¥µãÊı×é¶ÔÏó
+	// é¡¶ç‚¹ç¼“å†²å¯¹è±¡ï¼Œé¡¶ç‚¹æ•°ç»„å¯¹è±¡
 	unsigned int VBO;
 	unsigned int VAO;
 	unsigned int EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
-	// °ó¶¨
+	// ç»‘å®š
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	// Á´½Ó¶¥µãÊôĞÔ
-	// Î»ÖÃÊôĞÔ
+	// é“¾æ¥é¡¶ç‚¹å±æ€§
+	// ä½ç½®å±æ€§
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// ÑÕÉ«ÊôĞÔ
+	// é¢œè‰²å±æ€§
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 
-	// 8¸ö¶¥µã×ø±ê
+	// 8ä¸ªé¡¶ç‚¹åæ ‡
 	float vertices[] = {
 		-0.2f,  0.2f,  0.2f,  0.0f, 1.0f, 0.8f,
 		0.2f,  0.2f,  0.2f,  0.0f, 1.0f, 1.0f,
@@ -157,7 +170,7 @@ int main() {
 		-0.2f, -0.2f,  -0.2f,  0.0f, 0.0f, 0.8f
 
 	};
-	// Ë÷Òı
+	// ç´¢å¼•
 	unsigned int indices[] = {
 		0, 1, 2,
 		2, 3, 0,
@@ -184,13 +197,14 @@ int main() {
 		pres_ratio = 1.5f,
 		pres_near = 0.1f,
 		pres_far = 100.0f;
+	
 	ImGuiWindowFlags window_flags = 0;
 	bool show_orthographic_window = true;
 	bool show_perspective_window = false;
 	bool show_viewchanging_window = false;
 	bool show_camera_window = false;
 	cout << "render loop" << endl;
-	// äÖÈ¾Ñ­»· render loop
+	// æ¸²æŸ“å¾ªç¯ render loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Set frame time
@@ -198,15 +212,16 @@ int main() {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		processInput(window);
-		// ¼ì²â²¢µ÷ÓÃÊÂ¼ş
+		// processInput(window);
+		// æ£€æµ‹å¹¶è°ƒç”¨äº‹ä»¶
 		glfwPollEvents();
+		Do_Movement();
 		ImGui_ImplGlfwGL3_NewFrame();
-		// ±³¾°É«
+		// èƒŒæ™¯è‰²
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		bool* p_open = NULL;
-		// Ö÷´°¿Ú-----------------------------------------------------------------------------------
+		// ä¸»çª—å£-----------------------------------------------------------------------------------
 		ImGui::Begin("main", p_open, window_flags);
 		window_flags |= ImGuiWindowFlags_MenuBar;
 		if (ImGui::BeginMenuBar()) {
@@ -252,11 +267,11 @@ int main() {
 		ImGui::Spacing();
 		ImGui::Text("Hello!");
 		ImGui::End();
-		// Ö÷´°¿Ú»æÖÆÍê³É--------------------------------------------------------------------------	
+		// ä¸»çª—å£ç»˜åˆ¶å®Œæˆ--------------------------------------------------------------------------	
 		glm::mat4 model;
 		glm::mat4 view;
 		glm::mat4 projection;
-		// Éî¶È²âÊÔ
+		// æ·±åº¦æµ‹è¯•
 		glEnable(GL_DEPTH_TEST);
 		if (show_orthographic_window)
 		{
@@ -270,7 +285,7 @@ int main() {
 			ImGui::SliderFloat("far", &ortho_far, 0.0f, 20.0f);
 			model = glm::translate(model, glm::vec3(-1.5f, 0.5f, -1.5f));
 			view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-			// Õı½»Í¶Ó°
+			// æ­£äº¤æŠ•å½±
 			projection = glm::ortho(ortho_left, ortho_right, ortho_bottom, ortho_top, ortho_near, ortho_far);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
@@ -293,8 +308,9 @@ int main() {
 			ImGui::SliderFloat("ratio", &pres_ratio, 0.0f, 3.0f);
 			ImGui::SliderFloat("near", &pres_near, 0.0f, 3.0f);
 			ImGui::SliderFloat("far", &pres_far, 0.0f, 100.0f);
-			// Í¸ÊÓÍ¶Ó°
+			// é€è§†æŠ•å½±
 			projection = glm::perspective(pres_fov, pres_ratio, pres_near, pres_far);
+			// projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
 			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
@@ -309,6 +325,8 @@ int main() {
 		}
 
 		if (show_viewchanging_window) {
+			ImGui::Begin("View Changing", &show_viewchanging_window);
+			ImGui::Spacing();
 			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 			GLfloat radius = 4.0f;
 			GLfloat camX = sin(glfwGetTime()) * radius;
@@ -325,11 +343,16 @@ int main() {
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 			glBindVertexArray(EBO);
+			ImGui::End();
 		}
 		if (show_camera_window) {
+			ImGui::Begin("Camera Class", &show_camera_window);
+			ImGui::Spacing();
 			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			// view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 			view = camera.GetViewMatrix();
-			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			// projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			projection = glm::perspective(camera.Zoom, 1.5f, 0.1f, 100.0f);
 			GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
 			GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
 			GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
@@ -340,6 +363,7 @@ int main() {
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 			glBindVertexArray(EBO);
+			ImGui::End();
 		}
 		// Rendering
 		int display_w, display_h;
@@ -350,7 +374,7 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 
-	// ÊÍ·Å/É¾³ıÖ®Ç°·ÖÅäµÄËùÓĞ×ÊÔ´
+	// é‡Šæ”¾/åˆ é™¤ä¹‹å‰åˆ†é…çš„æ‰€æœ‰èµ„æº
 	ImGui_ImplGlfwGL3_Shutdown();
 	ImGui::DestroyContext();
 	glDeleteVertexArrays(1, &VAO);
@@ -361,25 +385,52 @@ int main() {
 
 
 
-// ÊäÈë¿ØÖÆ
+// è¾“å…¥æ§åˆ¶
 void processInput(GLFWwindow *window)
 {
 	// glfwGetKey
-	// ÊäÈë£ºÒ»¸ö´°¿ÚÒÔ¼°Ò»¸ö°´¼ü(ÕâÀï¼ì²éÓÃ»§ÊÇ·ñ°´ÏÂÁË·µ»Ø¼üEsc)
-	// ·µ»Ø£ºÕâ¸ö°´¼üÊÇ·ñÕıÔÚ±»°´ÏÂ
+	// è¾“å…¥ï¼šä¸€ä¸ªçª—å£ä»¥åŠä¸€ä¸ªæŒ‰é”®(è¿™é‡Œæ£€æŸ¥ç”¨æˆ·æ˜¯å¦æŒ‰ä¸‹äº†è¿”å›é”®Esc)
+	// è¿”å›ï¼šè¿™ä¸ªæŒ‰é”®æ˜¯å¦æ­£åœ¨è¢«æŒ‰ä¸‹
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-	GLfloat cameraSpeed = 0.05f;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.moveForward(deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.moveBack(deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.moveLeft(deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.moveRight(deltaTime);
+}
+
+// å¯¹çª—å£æ³¨å†Œä¸€ä¸ªå›è°ƒå‡½æ•°ï¼Œå®ƒä¼šåœ¨æ¯æ¬¡çª—å£å¤§å°è¢«è°ƒæ•´çš„æ—¶å€™è¢«è°ƒç”¨
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// è®¾ç½®çª—å£çš„ç»´åº¦
+	glViewport(0, 0, width, height);
+}
+
+// Moves/alters the camera positions based on user input
+void Do_Movement()
+{
+	// Camera controls
+	if (keys[GLFW_KEY_W])
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (keys[GLFW_KEY_S])
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (keys[GLFW_KEY_A])
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (keys[GLFW_KEY_D])
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// Is called whenever a key is pressed/released via GLFW
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	//cout << key << endl;
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key >= 0 && key < 1024)
+	{
+		if (action == GLFW_PRESS)
+			keys[key] = true;
+		else if (action == GLFW_RELEASE)
+			keys[key] = false;
+	}
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -391,22 +442,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
+	GLfloat xoffset = xpos - lastX;
+	GLfloat yoffset = lastY - ypos;  // Reversed since y-coordinates go from bottom to left
+
 	lastX = xpos;
 	lastY = ypos;
+
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 
-
-// ¶Ô´°¿Ú×¢²áÒ»¸ö»Øµ÷º¯Êı£¬Ëü»áÔÚÃ¿´Î´°¿Ú´óĞ¡±»µ÷ÕûµÄÊ±ºò±»µ÷ÓÃ
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	// ÉèÖÃ´°¿ÚµÄÎ¬¶È
-	glViewport(0, 0, width, height);
+	camera.ProcessMouseScroll(yoffset);
 }
-
-
-
-
