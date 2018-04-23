@@ -66,10 +66,10 @@ int main() {
 	// ImVec4 clear_color = ImVec4(0.92f, 0.92f, 0.92f, 1.0f);
 	ImVec4 clear_color = ImVec4(0.00f, 0.00f, 0.00f, 1.0f);
 
-	int cubeShader = shaderprogram(vertexShaderSource, fragmentShaderSource);
-
-
-	int lightShader = shaderprogram(lightvertex, lightfragment);
+	int phongCubeShader = shaderprogram(phongVertexShader, phongFragmentShader);
+	int gauraudCubeShader = shaderprogram(gouraudVertexShader, gouraudFragmentShader);
+	int phongLightShader = shaderprogram(lightvertex, lightfragment);
+	
 
     float vertices[] = {
         -0.4f, -0.4f, -0.4f,  0.0f,  0.0f, -1.0f,
@@ -156,8 +156,16 @@ int main() {
 	bool show_phong_window = true;
 	bool show_gouraud_window = false;
 	bool show_viewchanging_window = false;
-	bool show_camera_window = false;
 	cout << "render loop" << endl;
+	// phong
+	float ambientStrength = 0.1f;
+	float specularStrength = 0.5f;
+	float diffuseStrength = 1.0f;
+	float shinines = 32.0f; // 反光度
+	bool phone_reset = false;
+
+	glm::vec3 lightPos = glm::vec3(0.4f, 0.4f, 1.0f);
+	glm::vec3 runLightPos;
 
 	// 渲染循环 render loop
 	while (!glfwWindowShouldClose(window))
@@ -183,26 +191,16 @@ int main() {
 				{
 					show_viewchanging_window = false;
 					show_gouraud_window = false;
-					show_camera_window = false;
 				}
 				ImGui::MenuItem("Gouraud Shading", NULL, &show_gouraud_window);
 				if (show_gouraud_window == true)
 				{
 					show_viewchanging_window = false;
 					show_phong_window = false;
-					show_camera_window = false;
 				}
 				ImGui::MenuItem("View Changing", NULL, &show_viewchanging_window);
 				if (show_viewchanging_window == true)
 				{
-					show_gouraud_window = false;
-					show_phong_window = false;
-					show_camera_window = false;
-				}
-				ImGui::MenuItem("Camera Class", NULL, &show_camera_window);
-				if (show_camera_window == true)
-				{
-					show_viewchanging_window = false;
 					show_gouraud_window = false;
 					show_phong_window = false;
 				}
@@ -224,52 +222,174 @@ int main() {
 		glm::mat4 projection;
 		glm::vec3 objectColor;
 		glm::vec3 lightColor;
-		glm::vec3 lightPos;
+		
+		
 		// glm::vec3 lightPos;
 		// 深度测试
 		glEnable(GL_DEPTH_TEST);
 		if (show_phong_window)
 		{
+			ImGui::Begin("Phong Shading", &show_phong_window);
+			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("diffuseStrength", &diffuseStrength, 0.0f, 5.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("shinines", &shinines, 0.0f, 100.0f);
+			ImGui::SliderFloat("lightX", &lightPos.x, -20.0f, 20.0f);
+			ImGui::SliderFloat("lightY", &lightPos.y, -20.0f, 20.0f);
+			ImGui::SliderFloat("lightZ", &lightPos.z, -20.0f, 20.0f);
+			ImGui::Checkbox("remain unchanged", &phone_reset);
+			if (phone_reset) {
+				ambientStrength = 0.1f;
+				specularStrength = 0.5f;
+				diffuseStrength = 1.0f;
+				shinines = 32.0f; // 反光度
+				lightPos = glm::vec3(0.4f, 0.4f, 1.0f);
+			}
 			// cube
-			glUseProgram(cubeShader);
+			glUseProgram(phongCubeShader);
 			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 			view = camera.GetViewMatrix();
 			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
 			objectColor = glm::vec3(0.66f, 0.66f, 1.00f);
 			lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-			lightPos = glm::vec3(0.4f, 0.5f, 1.0f);
-			setMat4(cubeShader, "model", model);
-			setMat4(cubeShader, "view", view);
-			setMat4(cubeShader, "projection", projection);
-			setVec3(cubeShader, "objectColor", objectColor);
-			setVec3(cubeShader, "lightColor", lightColor);
-			setVec3(cubeShader, "lightPos", lightPos);
-			setVec3(cubeShader, "viewPos", camera.cameraPos);
+			
+			setMat4(phongCubeShader, "model", model);
+			setMat4(phongCubeShader, "view", view);
+			setMat4(phongCubeShader, "projection", projection);
+			setVec3(phongCubeShader, "objectColor", objectColor);
+			setVec3(phongCubeShader, "lightColor", lightColor);
+			setVec3(phongCubeShader, "lightPos", lightPos);
+			setVec3(phongCubeShader, "viewPos", camera.cameraPos);
+			setFloat(phongCubeShader, "ambientStrength", ambientStrength);
+			setFloat(phongCubeShader, "diffuseStrength", diffuseStrength);
+			setFloat(phongCubeShader, "specularStrength", specularStrength);
+			setFloat(phongCubeShader, "shinines", shinines);
+			
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glBindVertexArray(cubeVAO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 			// light
-			glUseProgram(lightShader);	
+			glUseProgram(phongLightShader);	
 			model = glm::mat4();
 			model = glm::translate(model, lightPos);
 			model = glm::scale(model, glm::vec3(0.2f));
-			setMat4(lightShader, "model", model);
-			setMat4(lightShader, "view", view);
-			setMat4(lightShader, "projection", projection);
+			setMat4(phongLightShader, "model", model);
+			setMat4(phongLightShader, "view", view);
+			setMat4(phongLightShader, "projection", projection);
 			glBindVertexArray(lightVAO);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+			ImGui::End();
 		}
 	
 		if (show_gouraud_window) {
+			ImGui::Begin("Gouraud Shading", &show_phong_window);
+			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("diffuseStrength", &diffuseStrength, 0.0f, 5.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("shinines", &shinines, 0.0f, 100.0f);
+			ImGui::SliderFloat("lightX", &lightPos.x, -20.0f, 20.0f);
+			ImGui::SliderFloat("lightY", &lightPos.y, -20.0f, 20.0f);
+			ImGui::SliderFloat("lightZ", &lightPos.z, -20.0f, 20.0f);
+			ImGui::Checkbox("remain unchanged", &phone_reset);
+			if (phone_reset) {
+				ambientStrength = 0.1f;
+				specularStrength = 0.5f;
+				diffuseStrength = 1.0f;
+				shinines = 32.0f; // 反光度
+				lightPos = glm::vec3(0.4f, 0.4f, 1.0f);
+			}
+			// cube
+			glUseProgram(gauraudCubeShader);
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			view = camera.GetViewMatrix();
+			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			objectColor = glm::vec3(0.66f, 0.66f, 1.00f);
+			lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+			
+			setMat4(gauraudCubeShader, "model", model);
+			setMat4(gauraudCubeShader, "view", view);
+			setMat4(gauraudCubeShader, "projection", projection);
+			setVec3(gauraudCubeShader, "objectColor", objectColor);
+			setVec3(gauraudCubeShader, "lightColor", lightColor);
+			setVec3(gauraudCubeShader, "lightPos", lightPos);
+			setVec3(gauraudCubeShader, "viewPos", camera.cameraPos);
+			setFloat(gauraudCubeShader, "ambientStrength", ambientStrength);
+			setFloat(gauraudCubeShader, "diffuseStrength", diffuseStrength);
+			setFloat(gauraudCubeShader, "specularStrength", specularStrength);
+			setFloat(gauraudCubeShader, "shinines", shinines);
 
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glBindVertexArray(cubeVAO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			// light
+			glUseProgram(phongLightShader);
+			model = glm::mat4();
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f));
+			setMat4(phongLightShader, "model", model);
+			setMat4(phongLightShader, "view", view);
+			setMat4(phongLightShader, "projection", projection);
+			glBindVertexArray(lightVAO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			ImGui::End();
 		}
 
 		if (show_viewchanging_window) {
-		}
-		if (show_camera_window) {
+			ImGui::Begin("Phong Shading", &show_phong_window);
+			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("diffuseStrength", &diffuseStrength, 0.0f, 5.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("shinines", &shinines, 0.0f, 100.0f);
+			ImGui::Checkbox("remain unchanged", &phone_reset);
+			if (phone_reset) {
+				ambientStrength = 0.1f;
+				specularStrength = 0.5f;
+				diffuseStrength = 1.0f;
+				shinines = 32.0f; // 反光度
+			}
+			// cube
+			glUseProgram(phongCubeShader);
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			view = camera.GetViewMatrix();
+			projection = glm::perspective(45.0f, 1.5f, 0.1f, 100.0f);
+			objectColor = glm::vec3(0.66f, 0.66f, 1.00f);
+			lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
+			setMat4(phongCubeShader, "model", model);
+			setMat4(phongCubeShader, "view", view);
+			setMat4(phongCubeShader, "projection", projection);
+			setVec3(phongCubeShader, "objectColor", objectColor);
+			setVec3(phongCubeShader, "lightColor", lightColor);
+			setVec3(phongCubeShader, "lightPos", runLightPos);
+			setVec3(phongCubeShader, "viewPos", camera.cameraPos);
+			setFloat(phongCubeShader, "ambientStrength", ambientStrength);
+			setFloat(phongCubeShader, "diffuseStrength", diffuseStrength);
+			setFloat(phongCubeShader, "specularStrength", specularStrength);
+			setFloat(phongCubeShader, "shinines", shinines);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glBindVertexArray(cubeVAO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			// light
+			glUseProgram(phongLightShader);
+			model = glm::mat4();
+			runLightPos.x = sin(glfwGetTime()) * 0.5f;
+			runLightPos.y = cos(glfwGetTime()) * 0.5f;
+			runLightPos.z = 1.0f;
+			model = glm::translate(model, runLightPos);
+			model = glm::scale(model, glm::vec3(0.2f));
+			setMat4(phongLightShader, "model", model);
+			setMat4(phongLightShader, "view", view);
+			setMat4(phongLightShader, "projection", projection);
+			glBindVertexArray(lightVAO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			ImGui::End();
 		}
 		// Rendering
 		int display_w, display_h;

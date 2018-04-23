@@ -11,8 +11,12 @@
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
-// cube顶点着色器源码
-const char *vertexShaderSource = "#version 440 core\n"
+
+
+// phong
+// Vertex shader:
+// ================
+const char *phongVertexShader = "#version 440 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec3 aNormal;\n"
 "out vec3 FragPos;\n"
@@ -27,11 +31,17 @@ const char *vertexShaderSource = "#version 440 core\n"
 "    gl_Position = projection * view * vec4(FragPos, 1.0);\n"
 "}\n\0";
 
-// cube片段着色器源码
-const char *fragmentShaderSource = "#version 440 core\n"
+// phong
+// Fragment shader:
+// ================
+const char *phongFragmentShader = "#version 440 core\n"
 "out vec4 FragColor;\n"
 "in vec3 Normal;\n"
 "in vec3 FragPos;\n"
+"uniform float ambientStrength;\n"
+"uniform float specularStrength;\n"
+"uniform float diffuseStrength;\n"
+"uniform float shinines;\n"
 "uniform vec3 lightPos;\n"
 "uniform vec3 viewPos;\n"
 "uniform vec3 lightColor;\n"
@@ -39,21 +49,68 @@ const char *fragmentShaderSource = "#version 440 core\n"
 "void main()\n"
 "{\n"
 "    // ambient\n"
-"    float ambientStrength = 0.1;\n"
 "    vec3 ambient = ambientStrength * lightColor;\n"
 "    // diffuse \n"
 "    vec3 norm = normalize(Normal);\n"
 "    vec3 lightDir = normalize(lightPos - FragPos);\n"
 "    float diff = max(dot(norm, lightDir), 0.0);\n"
-"    vec3 diffuse = diff * lightColor;\n"
+"    vec3 diffuse = diff * lightColor * diffuseStrength;\n"
 "   // specular\n"
-"    float specularStrength = 0.5;\n"
 "    vec3 viewDir = normalize(viewPos - FragPos);\n"
 "    vec3 reflectDir = reflect(-lightDir, norm);\n"
-"    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);\n"
+"    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shinines);\n"
 "    vec3 specular = specularStrength * spec * lightColor;\n"
 "    vec3 result = (ambient + diffuse + specular) * objectColor;\n"
 "    FragColor = vec4(result, 1.0);\n"
+"}\n\0";
+
+// gouraud
+// Vertex shader:
+// ================
+const char *gouraudVertexShader = "#version 330 core\n"
+"layout(location = 0) in vec3 aPos;\n"
+"layout(location = 1) in vec3 aNormal;\n"
+"out vec3 LightingColor;\n"
+"uniform vec3 lightPos;\n"
+"uniform vec3 viewPos;\n"
+"uniform vec3 lightColor;\n"
+"uniform float ambientStrength;\n"
+"uniform float specularStrength;\n"
+"uniform float diffuseStrength;\n"
+"uniform float shinines;\n"
+"uniform mat4 model;\n"
+"uniform mat4 view;\n"
+"uniform mat4 projection;\n"
+"void main()\n"
+"{\n"
+"	gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
+"	vec3 Position = vec3(model * vec4(aPos, 1.0));\n"
+"	vec3 Normal = mat3(transpose(inverse(model))) * aNormal;\n"
+"	// ambient\n"
+"	vec3 ambient = ambientStrength * lightColor;\n"
+"	// diffuse \n"
+"	vec3 norm = normalize(Normal);\n"
+"	vec3 lightDir = normalize(lightPos - Position);\n"
+"	float diff = max(dot(norm, lightDir), 0.0);\n"
+"	vec3 diffuse = diff * lightColor * diffuseStrength;\n"
+"	// specular\n"
+"	vec3 viewDir = normalize(viewPos - Position);\n"
+"	vec3 reflectDir = reflect(-lightDir, norm);\n"
+"	float spec = pow(max(dot(viewDir, reflectDir), 0.0), shinines);\n"
+"	vec3 specular = specularStrength * spec * lightColor;\n"
+"	LightingColor = ambient + diffuse + specular;\n"
+"}\n\0";
+
+// gouraud
+// Fragment shader:
+// ================
+const char *gouraudFragmentShader = "#version 440 core\n"
+"out vec4 FragColor;\n"
+"in vec3 LightingColor; \n"
+"uniform vec3 objectColor;\n"
+"void main()\n"
+"{\n"
+"   FragColor = vec4(LightingColor * objectColor, 1.0);\n"
 "}\n\0";
 
 // light顶点着色器
@@ -122,6 +179,12 @@ ID: shader ID
 name: uniform parameter
 value：the value of parameter
 */
+
+void setFloat(int ID, const std::string &name, float value)
+{
+	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
 void setVec3(int ID, const std::string &name, const glm::vec3 &value)
 {
 	glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
