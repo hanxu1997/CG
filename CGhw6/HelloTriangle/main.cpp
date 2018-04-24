@@ -232,7 +232,7 @@ int main() {
 			ImGui::Begin("Phong Shading", &show_phong_window);
 			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
 			ImGui::SliderFloat("diffuseStrength", &diffuseStrength, 0.0f, 5.0f);
-			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 2.0f);
 			ImGui::SliderFloat("shinines", &shinines, 0.0f, 100.0f);
 			ImGui::SliderFloat("lightX", &lightPos.x, -20.0f, 20.0f);
 			ImGui::SliderFloat("lightY", &lightPos.y, -20.0f, 20.0f);
@@ -287,7 +287,7 @@ int main() {
 			ImGui::Begin("Gouraud Shading", &show_phong_window);
 			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
 			ImGui::SliderFloat("diffuseStrength", &diffuseStrength, 0.0f, 5.0f);
-			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 2.0f);
 			ImGui::SliderFloat("shinines", &shinines, 0.0f, 100.0f);
 			ImGui::SliderFloat("lightX", &lightPos.x, -20.0f, 20.0f);
 			ImGui::SliderFloat("lightY", &lightPos.y, -20.0f, 20.0f);
@@ -342,7 +342,7 @@ int main() {
 			ImGui::Begin("Phong Shading", &show_phong_window);
 			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
 			ImGui::SliderFloat("diffuseStrength", &diffuseStrength, 0.0f, 5.0f);
-			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 2.0f);
 			ImGui::SliderFloat("shinines", &shinines, 0.0f, 100.0f);
 			ImGui::Checkbox("remain unchanged", &phone_reset);
 			if (phone_reset) {
