@@ -67,7 +67,7 @@ const char *phongFragmentShader = "#version 440 core\n"
 // gouraud
 // Vertex shader:
 // ================
-const char *gouraudVertexShader = "#version 330 core\n"
+const char *gouraudVertexShader = "#version 440 core\n"
 "layout(location = 0) in vec3 aPos;\n"
 "layout(location = 1) in vec3 aNormal;\n"
 "out vec3 LightingColor;\n"
