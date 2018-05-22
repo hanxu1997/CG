@@ -1,7 +1,15 @@
-﻿  draw.cpp
-d:\github\cg\cghw3\hellotriangle\draw.cpp(71): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\draw.cpp(216): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\draw.cpp(217): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\draw.cpp(242): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-d:\github\cg\cghw3\hellotriangle\draw.cpp(243): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
-  HelloTriangle.vcxproj -> D:\github\CG\CGhw3\HelloTriangle\Debug\CGhw3.exe
+﻿  main.cpp
+  imgui_impl_glfw_gl3.cpp
+  imgui_draw.cpp
+  imgui_demo.cpp
+  imgui.cpp
+  draw.cpp
+c:\github\cg\cghw3\hellotriangle\draw.cpp(71): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+c:\github\cg\cghw3\hellotriangle\draw.cpp(216): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\github\cg\cghw3\hellotriangle\draw.cpp(217): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\github\cg\cghw3\hellotriangle\draw.cpp(242): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+c:\github\cg\cghw3\hellotriangle\draw.cpp(243): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  正在生成代码...
+  glad.c
+  LINK : 没有找到 C:\github\CG\CGhw3\HelloTriangle\Debug\CGhw3.exe 或上一个增量链接没有生成它；正在执行完全链接
+  HelloTriangle.vcxproj -> C:\github\CG\CGhw3\HelloTriangle\Debug\CGhw3.exe
