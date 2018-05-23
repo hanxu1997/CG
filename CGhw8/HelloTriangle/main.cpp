@@ -19,9 +19,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 bool firstMouse = true;
 float lastX = 1200.0f / 2.0;
 float lastY = 800.0 / 2.0;
+GLfloat xpos, ypos;
 
 vector<Point>Points;
 int pointNum = 0;
+int lineindex = 0;
+int lineup = 0;
+glm::vec3 curveColor = glm::vec3(0.38, 0.38, 0.50);
+bool start = false;
+
 
 void RenderPoint(Point p) {
 	vector<Point> item;
@@ -51,6 +57,15 @@ void RenderCurve(vector<Point> p) {
 	delete[] curve;
 }
 
+
+
+void cursor_position_callback(GLFWwindow* window, double x, double y)
+{
+	xpos = float((x - 1200 / 2) );
+	ypos = float(0 - (y - 800 / 2) );
+	return;
+}
+
 int main() {
 	// 初始化GLFW
 	glfwInit();
@@ -74,6 +89,7 @@ int main() {
 	// 注册这个函数，告诉GLFW我们希望每当窗口调整大小的时候调用这个函数
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, cursor_position_callback);
 	// GLAD: 管理的OpenGL函数指针
 	// 调用任何OpenGL函数之前需要初始化GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -107,6 +123,8 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+
+
 	ImGuiWindowFlags window_flags = 0;
 	bool show_triangle_window = true;
 	bool show_circle_window = false;
@@ -135,7 +153,7 @@ int main() {
 					show_rasterization_window = false;
 					show_circle_window = false;
 				}
-				ImGui::MenuItem("Circle Window", NULL, &show_circle_window);
+			/*	ImGui::MenuItem("Circle Window", NULL, &show_circle_window);
 				if (show_circle_window == true)
 				{
 					show_rasterization_window = false;
@@ -146,51 +164,83 @@ int main() {
 				{
 					show_circle_window = false;
 					show_triangle_window = false;
-				}
+				}*/
 
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
-		if (ImGui::CollapsingHeader("Help"))
+		/*if (ImGui::CollapsingHeader("Help"))
 		{
 			ImGui::TextWrapped("Please click 'Windows' to choose different functions. \n\n");
-		}
+		}*/
 		ImGui::Spacing();
-		ImGui::Text("Hello!");
+		ImGui::Text("Press 'q' to draw points.");
+		ImGui::Text("Press 'e' to stop drawing.");
 		ImGui::End();
 		// 主窗口绘制完成--------------------------------------------------------------------------	
 		// rendering lines
 		if (show_triangle_window)
 		{
-			ImGui::Begin("Curve Window", &show_triangle_window);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			Point A(-200, -100);
-			Point B(-100, 100);
-			Point C(100, 100);
-			Point D(200, -100);
-			Points.push_back(A);
-			Points.push_back(B);
-			Points.push_back(C);
-			Points.push_back(D);
-			vector<Point> curve = BezierCurve(A, B, C, D);
-			RenderPoint(A);
-			RenderPoint(B);
-			RenderPoint(C);
-			RenderPoint(D);
-			RenderLine(A, B);
-			RenderLine(B, C);
-			RenderLine(C, D);
-			RenderCurve(curve);
+			ImGui::Begin("Curve Window", &show_triangle_window);
+			// color
+			setVec3(curveShader, "color", curveColor);
+			ImGui::ColorEdit3("color", (float*)&curveColor);
+			// add points
+			if (Points.size() < 4 && ImGui::IsMouseClicked(0) && start) {
+				Points.push_back(Point(xpos, ypos));
+			}
+			vector<Point>::const_iterator k = Points.begin();
+			// delete points
+			if (Points.size() >= 1) {
+				ImGui::Text("delete point");
+				if (ImGui::Button("1")) {
+					Points.erase(k);
+				}
+			}
+			ImGui::SameLine();
+			if (Points.size() >= 2) {
+				if (ImGui::Button("2")) {
+					Points.erase(k+1);
+				}
+			}
+			ImGui::SameLine();
+			if (Points.size() >= 3) {
+				if (ImGui::Button("3")) {
+					Points.erase(k + 2);
+				}
+			}
+			ImGui::SameLine();
+			if (Points.size() == 4) {
+				if (ImGui::Button("4")) {
+					Points.erase(k + 3);
+				}
+			}
+
+			// Render Points
+			for (int i = 0; i < Points.size(); i++) {
+				RenderPoint(Points[i]);
+			}
+			// Render Lines
+			lineup = Points.size() - 1;
+			for (int j = lineindex; j < lineup; j++) {
+				RenderLine(Points[j], Points[j + 1]);
+			}
+			// Render Curve
+			if (Points.size() == 4) {
+				ImGui::SliderInt("P1.x", &Points[0].x, -600, 600);
+				ImGui::SliderInt("P1.y", &Points[0].y, -400, 400);
+				ImGui::SliderInt("P2.x", &Points[1].x, -600, 600);
+				ImGui::SliderInt("P2.y", &Points[1].y, -400, 400);
+				ImGui::SliderInt("P3.x", &Points[2].x, -600, 600);
+				ImGui::SliderInt("P3.y", &Points[2].y, -400, 400);
+				ImGui::SliderInt("P4.x", &Points[3].x, -600, 600);
+				ImGui::SliderInt("P4.y", &Points[3].y, -400, 400);
+				vector<Point> curve = BezierCurve(Points[0], Points[1], Points[2], Points[3]);
+				RenderCurve(curve);
+			}
 			ImGui::End();
-		}
-		// rendering points
-		if (show_circle_window)
-		{
-
-		}
-		if (show_rasterization_window) {
-
 		}
 		// Rendering
 		int display_w, display_h;
@@ -222,6 +272,14 @@ void processInput(GLFWwindow *window)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		start = true;
+	}
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		start = false;
+	}
 }
 
 // 对窗口注册一个回调函数，它会在每次窗口大小被调整的时候被调用
@@ -244,5 +302,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	float yoffset = lastY - ypos;
 	lastX = xpos;
 	lastY = ypos;
+
 	// camera.ProcessMouseMovement(xoffset, yoffset);
 }

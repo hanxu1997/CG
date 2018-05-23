@@ -15,11 +15,12 @@ using namespace std;
 // 顶点着色器源码
 const char *vertexShaderSource = "#version 440 core\n"
 "layout (location = 0) in vec3 Position;\n"
+"uniform vec3 color;\n"
 "out vec4 vetexColor;\n"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(Position, 1.0);\n"
-"   vetexColor = vec4(0.38, 0.38, 0.50, 1.0);\n"
+"   vetexColor = vec4(color, 1.0);\n"
 "}\0";
 // 片段着色器源码
 const char *fragmentShaderSource = "#version 440 core\n"
